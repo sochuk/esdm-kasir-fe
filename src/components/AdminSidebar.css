@@ -1,0 +1,128 @@
+.global-sidebar {
+    height: 100vh;
+    width: 16rem; /* 64 * 0.25rem = 16rem */
+    position: fixed;
+    left: 0;
+    top: 0;
+    background-color: var(--color-surface); /* bg-stone-50 equiv */
+    display: flex;
+    flex-direction: column;
+    padding: 1rem;
+    overflow-y: auto;
+    z-index: 50;
+    border-right: 1px solid var(--color-surface-container);
+}
+
+/* Header */
+.sidebar-header {
+    margin-bottom: 2rem;
+    padding: 1rem 0.5rem 0;
+}
+
+.sidebar-brand {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--color-inverse-surface);
+    font-family: var(--font-display);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* Profile Badge */
+.sidebar-profile {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    margin-bottom: 1.5rem;
+    background-color: var(--color-surface-container-highest);
+    border-radius: 0.75rem;
+}
+
+.sidebar-avatar {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 9999px;
+    object-fit: cover;
+}
+
+.sidebar-identity {
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar-name {
+    font-family: var(--font-display);
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 700;
+    color: var(--color-inverse-surface);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 9rem;
+}
+
+.sidebar-role {
+    font-size: 10px;
+    color: var(--color-outline);
+    text-transform: uppercase;
+    font-family: var(--font-body);
+}
+
+/* Navigation */
+.sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    flex: 1;
+}
+
+.nav-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    color: var(--color-on-surface-variant);
+    border-radius: 0.5rem;
+    transition: all 0.15s ease;
+    font-family: var(--font-display);
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+    text-decoration: none;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    width: 100%;
+}
+
+.nav-item:hover:not(.nav-active) {
+    color: var(--color-primary-dim);
+    background-color: var(--color-surface-container);
+}
+
+.nav-active {
+    background-color: var(--color-primary-fixed);
+    color: var(--color-inverse-surface);
+    font-weight: 800;
+}
+
+.nav-item:active {
+    transform: scale(0.97);
+}
+
+.nav-bottom {
+    margin-top: auto;
+}
+
+.nav-logout {
+    color: var(--color-error);
+}
+
+.nav-logout:hover:not(.nav-active) {
+    background-color: var(--color-error-container);
+    color: var(--color-on-error-container);
+}

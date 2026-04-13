@@ -1,0 +1,230 @@
+/* Receipt Modal Overlay */
+.receipt-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+}
+
+.receipt-container {
+    background: var(--color-surface-container);
+    border: 1px solid var(--color-outline);
+    border-radius: 1rem;
+    width: 400px;
+    max-width: 100%;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: var(--shadow-lg);
+    animation: modal-slide-in 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    overflow: hidden;
+}
+
+@keyframes modal-slide-in {
+    from { opacity: 0; transform: translateY(20px) scale(0.95); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.receipt-modal-header {
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--color-outline);
+    background: var(--color-surface);
+}
+
+.receipt-modal-header h2 {
+    font-family: var(--font-display);
+    font-weight: 800;
+    color: var(--color-on-surface);
+    font-size: 1.1rem;
+}
+
+.btn-close {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--color-on-surface-variant);
+    display: flex;
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    transition: background 0.2s, color 0.2s;
+}
+
+.btn-close:hover {
+    background: var(--color-surface-variant);
+    color: var(--color-on-surface);
+}
+
+.receipt-paper-wrapper {
+    padding: 2rem;
+    overflow-y: auto;
+    display: flex;
+    justify-content: center;
+    background: var(--color-surface);
+}
+
+/* 
+    The visible Receipt styling 
+    (mimicked thermal paper)
+*/
+.receipt-paper {
+    background: #fff;
+    color: #000;
+    width: 320px;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.8rem;
+    padding: 1.5rem;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    text-shadow: none;
+}
+
+.rcpt-header {
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+.rcpt-header h1 {
+    font-weight: bold;
+    font-size: 1.25rem;
+    margin-bottom: 0.25rem;
+}
+
+.rcpt-header p {
+    font-size: 0.75rem;
+    margin: 0.1rem 0;
+}
+
+.rcpt-divider {
+    border-top: 1px dashed #000;
+    margin: 0.75rem 0;
+}
+
+.rcpt-divider-dashed {
+    border-top: 1px dashed #000;
+    margin: 0.4rem 0;
+}
+
+.rcpt-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    font-size: 0.75rem;
+}
+
+.rcpt-meta div {
+    display: flex;
+    justify-content: space-between;
+}
+
+.rcpt-items {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.75rem;
+}
+
+.rcpt-items th {
+    border-bottom: 1px dashed #000;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.25rem;
+}
+
+.rcpt-items td {
+    padding: 0.2rem 0;
+    vertical-align: top;
+}
+
+.rcpt-summary {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.summary-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.75rem;
+}
+
+.summary-row.total {
+    font-weight: bold;
+    font-size: 1rem;
+}
+
+.rcpt-payment {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.75rem;
+}
+
+.rcpt-footer {
+    text-align: center;
+    font-size: 0.75rem;
+    margin-top: 1rem;
+}
+
+.receipt-actions {
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+    border-top: 1px solid var(--color-outline);
+    background: var(--color-surface);
+}
+
+.text-left { text-align: left; }
+.text-center { text-align: center; }
+.text-right { text-align: right; }
+.uppercase { text-transform: uppercase; }
+.font-bold { font-weight: bold; }
+.mt-2 { margin-top: 0.5rem; }
+.mt-4 { margin-top: 1rem; }
+
+/* 
+   Hide print-only block normally
+*/
+.print-only {
+    display: none;
+}
+
+/* =========================================
+   MEDIA QUERY FOR ACTUAL PRINTING
+   ========================================= */
+@media print {
+    /* Hide the entire app UI except the print-only block */
+    body * {
+        visibility: hidden;
+    }
+    
+    .print-only, .print-only * {
+        visibility: visible;
+    }
+
+    .print-only {
+        display: block;
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        margin: 0;
+        padding: 0;
+    }
+
+    /* Print styling resets */
+    .receipt-paper {
+        box-shadow: none;
+        width: 100%;
+        max-width: 58mm; /* Standard narrow thermal printer */
+        padding: 0;
+        margin: 0 auto;
+        font-family: inherit; /* Let OS printing pref handle font if needed */
+        font-size: 12px;
+    }
+}

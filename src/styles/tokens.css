@@ -1,0 +1,46 @@
+:root {
+  /* Typography */
+  --font-display: 'Space Grotesk', sans-serif;
+  --font-body: 'Manrope', sans-serif;
+
+  /* Color Palette */
+  --color-primary: #d4a000; /* Deep Mustard */
+  --color-primary-fixed: #fdd400; /* Vibrant Yellow */
+  --color-primary-fixed-dim: #e6c000;
+  --color-on-primary-fixed: #0e0e0e;
+  --color-primary-container: #fff4cc;
+
+  --color-background: #ffffff;
+
+  --color-surface: #f9f6f5;
+  --color-surface-container: #eae7e7;
+  --color-surface-container-low: #f2efef;
+  --color-surface-container-lowest: #ffffff;
+  --color-surface-container-high: #e0dddd;
+  --color-surface-container-highest: #d4d1d1;
+  --color-surface-dim: #e8e4e3;
+  --color-surface-bright: rgba(255, 255, 255, 0.12);
+
+  --color-inverse-surface: #0e0e0e;
+  --color-inverse-primary: #fdd400;
+
+  --color-on-surface: #1a1a1a;
+  --color-on-surface-variant: #4a4a4a;
+
+  --color-secondary-container: #f0edeb;
+  --color-on-secondary-container: #2a2a2a;
+
+  --color-outline-variant: rgba(0, 0, 0, 0.15);
+  --color-error: #d32f2f;
+  --color-on-error: #ffffff;
+  --color-error-container: #ffeaea;
+  --color-on-error-container: #d32f2f;
+
+  /* Shadows & Depth */
+  --shadow-ambient: 0 20px 40px rgba(47, 47, 46, 0.06);
+  --shadow-inner-primary: inset 0 -2px 0 rgba(200, 160, 0, 0.3);
+
+  /* Border Radii */
+  --radius-default: 8px;
+  --radius-md: 12px;
+}

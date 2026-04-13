@@ -1,0 +1,258 @@
+/* Page Background */
+.login-page {
+  background-color: var(--color-inverse-surface);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Layout */
+.login-main {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  max-width: 28rem; /* max-w-md (448px) */
+}
+
+/* Brand Header */
+.login-brand {
+  margin-bottom: 2.5rem;
+  text-align: center;
+}
+
+.brand-logo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 4rem;
+  height: 4rem;
+  background-color: var(--color-primary-fixed);
+  color: var(--color-inverse-surface);
+  border-radius: 0.5rem;
+  margin-bottom: 1rem;
+  transform: rotate(-3deg);
+}
+
+.brand-logo .material-symbols-outlined {
+  font-size: 2.25rem; /* text-4xl */
+}
+
+.brand-title {
+  font-size: 2.25rem;
+  font-weight: 700;
+  letter-spacing: -0.05em; /* tracking-tighter */
+  color: white;
+  font-family: var(--font-display);
+}
+
+/* Card */
+.login-card {
+  background-color: var(--color-surface-container-low);
+  border-radius: 0.75rem; /* rounded-xl */
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); /* shadow-2xl */
+  border: 1px solid rgba(175, 173, 172, 0.1); /* border-outline-variant/10 */
+  overflow: hidden;
+}
+
+.login-card-content {
+  padding: 2rem; /* p-8 */
+}
+
+/* Typography inside card */
+.login-title {
+  font-size: 1.5rem; /* text-2xl */
+  font-weight: 700;
+  color: var(--color-inverse-surface);
+  margin-bottom: 0.5rem;
+  font-family: var(--font-display);
+}
+
+.login-subtitle {
+  color: var(--color-on-surface-variant);
+  font-size: 0.875rem; /* text-sm */
+  margin-bottom: 2rem;
+}
+
+/* Forms */
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem; /* space-y-6 */
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem; /* space-y-2 */
+}
+
+.input-label-wrapper {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  padding: 0 0.25rem;
+}
+
+.input-label {
+  display: block;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--color-inverse-surface);
+  text-transform: uppercase;
+  letter-spacing: 0.1em; /* tracking-widest */
+  padding: 0 0.25rem;
+  font-family: var(--font-display);
+}
+
+.input-wrapper {
+  position: relative;
+}
+
+.input-icon-left {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  padding-left: 0.75rem;
+  display: flex;
+  align-items: center;
+  pointer-events: none;
+}
+
+.input-icon-left .material-symbols-outlined {
+  color: var(--color-on-surface-variant);
+}
+
+.input-icon-right {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  padding-right: 0.75rem;
+  display: flex;
+  align-items: center;
+}
+
+.password-toggle {
+  color: var(--color-on-surface-variant);
+  transition: color 0.15s ease;
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+
+.password-toggle:hover {
+  color: var(--color-inverse-surface);
+}
+
+.input-field {
+  display: block;
+  width: 100%;
+  padding: 1rem 1rem 1rem 2.5rem; /* py-4, pr-4, pl-10 */
+  background-color: var(--color-surface-container-lowest);
+  border: none;
+  border-radius: 0.5rem;
+  color: var(--color-inverse-surface);
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.15s ease;
+  outline: none;
+}
+
+.input-field::placeholder {
+  color: rgba(92, 91, 91, 0.4); /* on-surface-variant/40 */
+}
+
+.input-field:focus {
+  box-shadow: 0 0 0 2px var(--color-primary-fixed); /* focus:ring-2 focus:ring-primary-fixed */
+}
+
+/* Options */
+.options-group {
+  display: flex;
+  align-items: center;
+}
+
+.checkbox {
+  height: 1rem;
+  width: 1rem;
+  color: var(--color-primary);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: 0.25rem;
+  outline: none;
+}
+
+.checkbox:focus {
+  box-shadow: 0 0 0 2px var(--color-primary-fixed);
+}
+
+.checkbox-label {
+  margin-left: 0.5rem;
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--color-on-surface-variant);
+  text-transform: uppercase;
+  letter-spacing: 0.05em; /* tracking-wide */
+  font-family: var(--font-display);
+}
+
+/* Error Message Override */
+.error-message {
+  margin-top: -0.5rem;
+  color: var(--color-on-error-container);
+  background-color: var(--color-error-container);
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+/* Buttons */
+.btn-submit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 1rem 1.5rem; /* py-4 px-6 */
+  background-color: var(--color-primary-fixed);
+  color: var(--color-inverse-surface);
+  font-weight: 800; /* font-extrabold */
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em; /* tracking-widest */
+  border-radius: 0.5rem;
+  border: none;
+  transition: all 0.15s ease;
+  cursor: pointer;
+}
+
+.btn-submit:hover:not(:disabled) {
+  background-color: var(--color-primary-fixed-dim);
+}
+
+.btn-submit:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.btn-submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-icon {
+  font-size: 1.125rem;
+  transition: transform 0.15s ease;
+}
+
+.btn-submit:hover:not(:disabled) .btn-icon {
+  transform: translateX(4px);
+}

@@ -1,0 +1,52 @@
+@import './styles/tokens.css';
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-body);
+  background-color: var(--color-surface);
+  color: var(--color-on-surface);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  margin: 0;
+  color: var(--color-inverse-surface);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Typography Utility Classes */
+.display-lg {
+  font-size: 3rem;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+.headline-sm {
+  font-size: 1.5rem;
+  line-height: 1.2;
+}
+
+.label-sm {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-family: var(--font-display);
+  font-weight: 700;
+}
+
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}

@@ -1,0 +1,401 @@
+.member-profile-page {
+    background-color: var(--color-background);
+    color: var(--color-on-background);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+}
+
+.profile-container {
+    width: 100%;
+    max-width: 24rem;
+    margin: 0 auto;
+}
+
+.profile-card {
+    background-color: white;
+    border-radius: 1.5rem;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    overflow: hidden;
+    border: 1px solid var(--color-surface-container);
+    display: flex;
+    flex-direction: column;
+}
+
+.card-accent {
+    height: 0.5rem;
+    background-color: var(--color-primary-fixed);
+    width: 100%;
+}
+
+.card-content {
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 2rem;
+}
+
+/* Photo */
+.profile-photo-wrapper {
+    position: relative;
+    width: 8rem;
+    height: 8rem;
+    border-radius: 1rem;
+    overflow: hidden;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    border: 2px solid var(--color-surface-container);
+    cursor: pointer;
+}
+
+.profile-photo {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.photo-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.profile-photo-wrapper:hover .photo-overlay {
+    opacity: 1;
+}
+
+/* Identity section */
+.identity-section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    align-items: center;
+}
+
+.identity-label {
+    font-size: 10px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.3em;
+    color: var(--color-outline);
+}
+
+.identity-name {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--color-inverse-surface);
+    letter-spacing: -0.025em;
+    font-family: var(--font-display);
+}
+
+/* Active Badge */
+.active-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.7rem;
+    font-weight: 800;
+    color: #16a34a;
+    background: rgba(34, 197, 94, 0.15);
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.25rem;
+}
+
+.inactive-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.7rem;
+    font-weight: 800;
+    color: #dc2626;
+    background: rgba(220, 38, 38, 0.1);
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.25rem;
+}
+
+.active-dot {
+    width: 6px;
+    height: 6px;
+    background-color: #16a34a;
+    border-radius: 50%;
+    box-shadow: 0 0 8px rgba(34, 197, 94, 0.8);
+    animation: pulse-dot 2s infinite;
+}
+
+.inactive-dot {
+    width: 6px;
+    height: 6px;
+    background-color: #dc2626;
+    border-radius: 50%;
+}
+
+@keyframes pulse-dot {
+    0% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.5); opacity: 0.5; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+.points-display {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--color-primary);
+    background: rgba(var(--color-primary-rgb, 234, 179, 8), 0.1);
+    padding: 0.35rem 1rem;
+    border-radius: 9999px;
+    margin-top: 0.25rem;
+}
+
+/* QR Code */
+.qr-section {
+    background-color: var(--color-surface-container-low);
+    padding: 1.5rem;
+    border-radius: 1.5rem;
+    border: 1px solid rgba(175, 173, 172, 0.1);
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.qr-wrapper {
+    background-color: white;
+    padding: 1rem;
+    border-radius: 1rem;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(175, 173, 172, 0.2);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.qr-label {
+    font-size: 10px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--color-inverse-surface);
+}
+
+/* Account Info */
+.account-info-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    width: 100%;
+    padding-top: 0.5rem;
+}
+
+.info-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    text-align: left;
+}
+
+.info-group-row {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    text-align: left;
+}
+
+.info-group-row .info-row-inner {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.border-top {
+    border-top: 1px solid var(--color-surface-container);
+    padding-top: 1rem;
+}
+
+.info-label {
+    font-size: 10px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--color-outline);
+    display: block;
+}
+
+.info-value {
+    font-size: 1.125rem;
+    font-weight: 700;
+    font-family: var(--font-mono), monospace;
+    color: var(--color-inverse-surface);
+}
+
+.btn-inline-edit {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--color-primary);
+    text-decoration: underline;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    flex-shrink: 0;
+}
+
+.btn-change-password {
+    width: 100%;
+    padding: 0.75rem;
+    margin-top: 0.25rem;
+    background-color: var(--color-surface-container-low);
+    border: 1px solid var(--color-surface-container);
+    border-radius: 0.75rem;
+    font-weight: 700;
+    font-size: 0.8rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    color: var(--color-inverse-surface);
+    transition: background 0.15s;
+}
+
+.btn-change-password:hover {
+    background-color: var(--color-surface-container);
+}
+
+/* Footer Tag */
+.card-footer {
+    background-color: var(--color-inverse-surface);
+    padding: 0.75rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.footer-brand {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--color-primary-fixed);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+/* Logout Button */
+.logout-button {
+    width: 100%;
+    margin-top: 2rem;
+    background-color: var(--color-inverse-surface);
+    color: var(--color-background);
+    padding: 1rem 1.5rem;
+    border-radius: 1rem;
+    font-weight: 900;
+    font-size: 0.875rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    transition: all 0.15s ease;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    border: none;
+    cursor: pointer;
+}
+
+.logout-button:hover {
+    background-color: black;
+}
+
+.logout-button:active {
+    transform: scale(0.95);
+}
+
+.icon-bold {
+    font-weight: bold;
+}
+
+/* Modal Overlay */
+.mp-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+}
+
+.mp-modal-box {
+    background: white;
+    border-radius: 1rem;
+    padding: 1.5rem;
+    width: 100%;
+    max-width: 22rem;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
+}
+
+.mp-modal-box h2 {
+    font-size: 1.1rem;
+    font-weight: 800;
+    margin-bottom: 1rem;
+    color: var(--color-inverse-surface);
+}
+
+.mp-input {
+    width: 100%;
+    padding: 0.6rem 0.75rem;
+    border: 1px solid var(--color-surface-container);
+    border-radius: 0.5rem;
+    font-size: 0.9rem;
+    margin-bottom: 0.75rem;
+    outline: none;
+    font-family: inherit;
+}
+
+.mp-input:focus {
+    border-color: var(--color-primary);
+}
+
+.mp-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.mp-btn-cancel {
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    border: 1px solid var(--color-surface-container);
+    background: white;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 0.85rem;
+}
+
+.mp-btn-save {
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    border: none;
+    background: var(--color-primary);
+    color: black;
+    font-weight: 800;
+    cursor: pointer;
+    font-size: 0.85rem;
+}
+
+.mp-btn-save:hover {
+    opacity: 0.85;
+}

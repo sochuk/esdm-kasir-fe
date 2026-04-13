@@ -1,0 +1,219 @@
+import React, { useEffect, useState, useRef } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { logout, fetchMe, updateUser } from '../features/auth/authSlice';
+import { addNotification } from '../features/ui/uiSlice';
+import axiosInstance from '../api/axiosInstance';
+import AdminSidebar from '../components/AdminSidebar';
+import './AdminInventaris.css'; // Shared admin design system
+
+const AdminProfil = () => {
+    const dispatch = useDispatch();
+    const { user } = useSelector((state) => state.auth);
+    const fileInputRef = useRef(null);
+
+    const [phoneModalOpen, setPhoneModalOpen] = useState(false);
+    const [newPhone, setNewPhone] = useState('');
+    const [pwdModalOpen, setPwdModalOpen] = useState(false);
+    const [oldPwd, setOldPwd] = useState('');
+    const [newPwd, setNewPwd] = useState('');
+    const [saving, setSaving] = useState(false);
+
+    useEffect(() => { dispatch(fetchMe()); }, [dispatch]);
+
+    const fRupiah = (num) => new Intl.NumberFormat('id-ID', {
+        style: 'currency', currency: 'IDR', minimumFractionDigits: 0
+    }).format(num || 0);
+
+    const handlePhotoClick = () => fileInputRef.current.click();
+
+    const handlePhotoChange = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onloadend = async () => {
+            try {
+                await axiosInstance.post('/api/auth/update-profile', { photo_base64: reader.result });
+                dispatch(fetchMe());
+                dispatch(addNotification({ message: 'Foto berhasil diperbarui!', type: 'success' }));
+            } catch(err) {
+                dispatch(addNotification({ message: 'Gagal update foto: ' + (err.response?.data?.error || err.message), type: 'error' }));
+            }
+        };
+        reader.readAsDataURL(file);
+    };
+
+    const handleToggleStatus = async () => {
+        setSaving(true);
+        try {
+            const nextStatus = !isActive;
+            await axiosInstance.post('/api/auth/update-profile', { is_active: nextStatus });
+            dispatch(fetchMe());
+            dispatch(addNotification({ message: `Status berhasil diubah menjadi ${nextStatus ? 'AKTIF' : 'NON-AKTIF'}`, type: 'success' }));
+        } catch(err) {
+            dispatch(addNotification({ message: 'Gagal ubah status: ' + (err.response?.data?.error || err.message), type: 'error' }));
+        } finally { setSaving(false); }
+    };
+
+    const handleUpdatePhone = async () => {
+        if (!newPhone.trim()) return dispatch(addNotification({ message: 'Nomor HP tidak boleh kosong', type: 'error' }));
+        setSaving(true);
+        try {
+            await axiosInstance.post('/api/auth/update-profile', { no_handphone: newPhone.trim() });
+            dispatch(fetchMe());
+            setPhoneModalOpen(false);
+            setNewPhone('');
+            dispatch(addNotification({ message: 'Nomor HP berhasil diperbarui!', type: 'success' }));
+        } catch(err) {
+            dispatch(addNotification({ message: 'Gagal: ' + (err.response?.data?.error || err.message), type: 'error' }));
+        } finally { setSaving(false); }
+    };
+
+    const handleChangePwd = async () => {
+        if (!oldPwd || !newPwd) return dispatch(addNotification({ message: 'Semua kolom wajib diisi', type: 'error' }));
+        if (newPwd.length < 6) return dispatch(addNotification({ message: 'Password baru minimal 6 karakter', type: 'error' }));
+        setSaving(true);
+        try {
+            await axiosInstance.post('/api/auth/change-password', { old_password: oldPwd, new_password: newPwd });
+            setPwdModalOpen(false);
+            setOldPwd(''); setNewPwd('');
+            dispatch(addNotification({ message: 'Password berhasil diubah!', type: 'success' }));
+        } catch(err) {
+            dispatch(addNotification({ message: err.response?.data?.error || 'Gagal mengubah password', type: 'error' }));
+        } finally { setSaving(false); }
+    };
+
+    const isActive = user?.is_active === true || user?.is_active === 1 || user?.is_active === 'true';
+
+    return (
+        <div className="admin-layout">
+            <AdminSidebar />
+            <main className="admin-main inventory-main">
+                <div className="inventory-container">
+                    <div className="inventory-header">
+                        <div>
+                            <h3 className="inventory-title">Profil Saya</h3>
+                            <p className="inventory-subtitle">Kelola informasi akun dan keamanan</p>
+                        </div>
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginTop: '1rem' }}>
+                        {/* Card: Foto & Identitas */}
+                        <div className="analytics-card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem', padding: '2rem' }}>
+                            {/* Foto */}
+                            <div
+                                style={{ position: 'relative', width: '6rem', height: '6rem', borderRadius: '0.75rem', overflow: 'hidden', cursor: 'pointer', border: '2px solid var(--color-surface-container)' }}
+                                onClick={handlePhotoClick}
+                                title="Klik untuk ubah foto"
+                            >
+                                <img
+                                    src={user?.photo_base64 || 'https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png'}
+                                    alt="Foto Profil"
+                                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                />
+                                <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0, transition: 'opacity 0.2s', color: 'white' }}
+                                    className="photo-hover-overlay"
+                                >
+                                    <span className="material-symbols-outlined">edit</span>
+                                </div>
+                                <input type="file" accept="image/*" ref={fileInputRef} style={{ display: 'none' }} onChange={handlePhotoChange} />
+                            </div>
+
+                            {isActive ? (
+                                <span onClick={handleToggleStatus} style={{ cursor: 'pointer', display:'inline-flex', alignItems:'center', gap:'0.4rem', fontSize:'0.7rem', fontWeight:800, color:'#16a34a', background:'rgba(34,197,94,0.15)', padding:'0.25rem 0.75rem', borderRadius:'9999px' }} title="Klik untuk non-aktifkan">
+                                    <span style={{ width:6, height:6, background:'#16a34a', borderRadius:'50%', animation:'pulse 2s infinite', boxShadow:'0 0 8px rgba(34,197,94,0.8)' }} /> STATUS: AKTIF
+                                </span>
+                            ) : (
+                                <span onClick={handleToggleStatus} style={{ cursor: 'pointer', display:'inline-flex', alignItems:'center', gap:'0.4rem', fontSize:'0.7rem', fontWeight:800, color:'#dc2626', background:'rgba(220,38,38,0.1)', padding:'0.25rem 0.75rem', borderRadius:'9999px' }} title="Klik untuk aktifkan">
+                                    <span style={{ width:6, height:6, background:'#dc2626', borderRadius:'50%' }} /> STATUS: NON-AKTIF
+                                </span>
+                            )}
+
+                            <div style={{ textAlign: 'center' }}>
+                                <p style={{ fontSize:'0.7rem', fontWeight:900, textTransform:'uppercase', letterSpacing:'0.2em', color:'var(--color-outline)' }}>Nama</p>
+                                <h2 style={{ fontSize:'1.2rem', fontWeight:800 }}>{user?.name || user?.username}</h2>
+                                <p style={{ color:'var(--color-outline)' }}>{user?.role}</p>
+                            </div>
+                        </div>
+
+                        {/* Card: Detail Info */}
+                        <div className="analytics-card" style={{ padding: '1.5rem' }}>
+                            <h3 style={{ fontWeight:800, marginBottom:'1rem' }}>Informasi Akun</h3>
+                            
+                            <div style={{ display:'flex', flexDirection:'column', gap:'1rem' }}>
+                                <div style={{ borderBottom:'1px solid var(--color-surface-container)', paddingBottom:'0.75rem' }}>
+                                    <p style={{ fontSize:'0.7rem', fontWeight:900, textTransform:'uppercase', color:'var(--color-outline)' }}>Username</p>
+                                    <p style={{ fontWeight:700, fontFamily:'monospace' }}>{user?.username}</p>
+                                </div>
+                                <div style={{ borderBottom:'1px solid var(--color-surface-container)', paddingBottom:'0.75rem' }}>
+                                    <p style={{ fontSize:'0.7rem', fontWeight:900, textTransform:'uppercase', color:'var(--color-outline)' }}>No. Anggota</p>
+                                    <p style={{ fontWeight:700, fontFamily:'monospace' }}>{user?.no_anggota || '-'}</p>
+                                </div>
+                                <div style={{ borderBottom:'1px solid var(--color-surface-container)', paddingBottom:'0.75rem' }}>
+                                    <p style={{ fontSize:'0.7rem', fontWeight:900, textTransform:'uppercase', color:'var(--color-outline)' }}>Unit</p>
+                                    <p style={{ fontWeight:700 }}>{user?.unit || '-'}</p>
+                                </div>
+                                <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', borderBottom:'1px solid var(--color-surface-container)', paddingBottom:'0.75rem' }}>
+                                    <div>
+                                        <p style={{ fontSize:'0.7rem', fontWeight:900, textTransform:'uppercase', color:'var(--color-outline)' }}>No. Handphone</p>
+                                        <p style={{ fontWeight:700, fontFamily:'monospace' }}>{user?.no_handphone || '-'}</p>
+                                    </div>
+                                    <button className="btn-primary" style={{ fontSize:'0.75rem', padding:'0.35rem 0.75rem' }} onClick={() => { setNewPhone(user?.no_handphone || ''); setPhoneModalOpen(true); }}>
+                                        Ubah
+                                    </button>
+                                </div>
+                                <div>
+                                    <p style={{ fontSize:'0.7rem', fontWeight:900, textTransform:'uppercase', color:'var(--color-outline)', marginBottom:'0.5rem' }}>Keamanan</p>
+                                    <button className="btn-primary" onClick={() => setPwdModalOpen(true)}>
+                                        <span className="material-symbols-outlined">lock_reset</span>
+                                        Ubah Password
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+
+            {/* Modal: Ubah No. HP */}
+            {phoneModalOpen && (
+                <div className="modal-overlay z-modal" onClick={() => setPhoneModalOpen(false)}>
+                    <div className="confirm-modal" onClick={e => e.stopPropagation()} style={{ maxWidth: '22rem' }}>
+                        <h3 className="confirm-title">Ubah No. Handphone</h3>
+                        <input className="form-input" type="tel" placeholder="Contoh: 08123456789"
+                            value={newPhone} onChange={e => setNewPhone(e.target.value)}
+                            onKeyDown={e => e.key === 'Enter' && handleUpdatePhone()} autoFocus />
+                        <div className="confirm-actions" style={{ marginTop: '1rem' }}>
+                            <button className="btn-cancel" onClick={() => setPhoneModalOpen(false)}>Batal</button>
+                            <button className="btn-save" onClick={handleUpdatePhone} disabled={saving}>
+                                {saving ? 'Menyimpan...' : 'Simpan'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Modal: Ubah Password */}
+            {pwdModalOpen && (
+                <div className="modal-overlay z-modal" onClick={() => setPwdModalOpen(false)}>
+                    <div className="confirm-modal" onClick={e => e.stopPropagation()} style={{ maxWidth: '22rem' }}>
+                        <h3 className="confirm-title">Ubah Password</h3>
+                        <input className="form-input" type="password" placeholder="Password Lama"
+                            value={oldPwd} onChange={e => setOldPwd(e.target.value)} autoFocus
+                            style={{ marginBottom: '0.75rem' }} />
+                        <input className="form-input" type="password" placeholder="Password Baru (min. 6 karakter)"
+                            value={newPwd} onChange={e => setNewPwd(e.target.value)}
+                            onKeyDown={e => e.key === 'Enter' && handleChangePwd()} />
+                        <div className="confirm-actions" style={{ marginTop: '1rem' }}>
+                            <button className="btn-cancel" onClick={() => setPwdModalOpen(false)}>Batal</button>
+                            <button className="btn-save" onClick={handleChangePwd} disabled={saving}>
+                                {saving ? 'Menyimpan...' : 'Simpan'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+};
+
+export default AdminProfil;

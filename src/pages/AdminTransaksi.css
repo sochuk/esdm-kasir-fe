@@ -1,0 +1,96 @@
+.tx-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.metric-card {
+    background: var(--color-surface-container);
+    border: 1px solid var(--color-outline);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.bg-primary-subtle {
+    background: linear-gradient(135deg, rgba(250,204,21,0.1) 0%, rgba(202,138,4,0.1) 100%);
+    border-color: rgba(250, 204, 21, 0.3);
+}
+
+.metric-icon {
+    font-size: 2.5rem;
+    color: var(--color-on-surface-variant);
+    background: var(--color-surface);
+    padding: 0.75rem;
+    border-radius: 0.75rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.bg-primary-subtle .metric-icon {
+    color: var(--color-primary);
+    background: rgba(250, 204, 21, 0.15);
+}
+
+.metric-label {
+    font-family: var(--font-label);
+    font-size: 0.85rem;
+    color: var(--color-on-surface-variant);
+    margin-bottom: 0.25rem;
+}
+
+.metric-value {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--color-on-surface);
+    margin: 0;
+}
+
+.tx-list-container {
+    background: var(--color-surface-container);
+    border-radius: 1rem;
+    border: 1px solid var(--color-outline);
+    overflow: hidden;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.badge-payment {
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+}
+
+.badge-payment.cash { background: #dcfce7; color: #166534; }
+.badge-payment.card { background: #dbeafe; color: #1e40af; }
+.badge-payment.qr { background: #f3e8ff; color: #6b21a8; }
+
+.btn-receipt {
+    background: var(--color-surface);
+    color: var(--color-primary);
+    border: 1px solid var(--color-outline);
+    border-radius: 0.5rem;
+    padding: 0.4rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-receipt:hover {
+    background: var(--color-primary);
+    color: var(--color-on-primary);
+}
