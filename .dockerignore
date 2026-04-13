@@ -1,0 +1,8 @@
+node_modules
+dist
+dist-ssr
+*.log
+.env
+.git
+stitch_assets
+build_log.txt
