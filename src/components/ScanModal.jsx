@@ -121,7 +121,7 @@ const ScanModal = ({ isOpen, onClose, onScan }) => {
 
                 {/* Help text */}
                 <p className="scan-hint">
-                    Arahkan pemindai ke <strong>barcode produk</strong> atau <strong>QR Code anggota</strong>
+                    Arahkan pemindai ke <strong>QR Code anggota</strong>
                     <br />
                     <kbd>Enter</kbd> untuk konfirmasi &nbsp;·&nbsp; <kbd>Esc</kbd> untuk tutup
                 </p>

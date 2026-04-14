@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchProducts } from '../features/inventory/inventorySlice';
 import { addNotification } from '../features/ui/uiSlice';
@@ -12,7 +12,7 @@ import './AdminInventaris.css';
 const AdminDashboard = () => {
     const dispatch = useDispatch();
     const { items: inventory, status } = useSelector((state) => state.inventory);
-    
+
     // POS State
     const [cart, setCart] = useState([]);
     const [member, setMember] = useState(null);
@@ -22,7 +22,8 @@ const AdminDashboard = () => {
     const [manualLookupText, setManualLookupText] = useState('');
     const [isFetchingMember, setIsFetchingMember] = useState(false);
     const [scanModalOpen, setScanModalOpen] = useState(false);
-    
+    const searchInputRef = useRef(null);
+
     // Receipt State
     const [receiptModalOpen, setReceiptModalOpen] = useState(false);
     const [currentTxId, setCurrentTxId] = useState(null);
@@ -34,6 +35,12 @@ const AdminDashboard = () => {
     useEffect(() => {
         if (status === 'idle') dispatch(fetchProducts());
     }, [status, dispatch]);
+
+    // Auto-focus ke search input saat dashboard dibuka — scanner langsung siap
+    useEffect(() => {
+        const timer = setTimeout(() => searchInputRef.current?.focus(), 300);
+        return () => clearTimeout(timer);
+    }, []);
 
     // Financial calculations
     const subtotal = cart.reduce((acc, item) => acc + (item.price * item.qty), 0);
@@ -48,7 +55,7 @@ const AdminDashboard = () => {
     const fRupiah = (num) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(num);
 
     // Dynamic item manual search
-    const filteredProducts = inventory.filter(p => p.stock > 0 && 
+    const filteredProducts = inventory.filter(p => p.stock > 0 &&
         (p.name.toLowerCase().includes(searchQuery.toLowerCase()) || p.sku.toLowerCase().includes(searchQuery.toLowerCase()))
     );
 
@@ -71,13 +78,13 @@ const AdminDashboard = () => {
                 newCart[existingIndex] = { ...existing, qty: existing.qty + 1 };
                 return newCart;
             }
-            return [...prev, { 
-                product_id: product.id, 
-                sku: product.sku, 
-                name: product.name, 
-                price: Number(product.price), 
-                qty: 1, 
-                stock: Number(product.stock) 
+            return [...prev, {
+                product_id: product.id,
+                sku: product.sku,
+                name: product.name,
+                price: Number(product.price),
+                qty: 1,
+                stock: Number(product.stock)
             }];
         });
     }, []);
@@ -85,11 +92,11 @@ const AdminDashboard = () => {
     const updateQty = (productId, delta) => {
         setCart(prev => {
             const newCart = prev.map(item => {
-                if(item.product_id === productId) {
+                if (item.product_id === productId) {
                     const newQty = item.qty + delta;
-                    if(newQty > item.stock) {
-                         dispatch(addNotification({ message: 'Stok maksimum tercapai', type: 'error' }));
-                         return item;
+                    if (newQty > item.stock) {
+                        dispatch(addNotification({ message: 'Stok maksimum tercapai', type: 'error' }));
+                        return item;
                     }
                     return { ...item, qty: newQty };
                 }
@@ -175,22 +182,22 @@ const AdminDashboard = () => {
             items: cart.map(i => ({ id: i.product_id, sku: i.sku, name: i.name, qty: i.qty, price: i.price })),
             member_id: member ? member.id : null,
             payment_method: paymentMethod,
-            subtotal, 
-            discount: applicableDiscount, 
-            tax, 
-            total, 
-            points_earned: pointsEarned, 
+            subtotal,
+            discount: applicableDiscount,
+            tax,
+            total,
+            points_earned: pointsEarned,
             points_used: pointsUsed
         };
 
         try {
             const res = await axiosInstance.post('/api/pos/checkout', payload);
-            
+
             // Show Receipt Modal
             setCurrentTxId(res.data.transaction_id);
             setReceiptModalOpen(true);
             setCheckoutConfirmOpen(false);
-            
+
             // Reset state
             setCart([]);
             setMember(null);
@@ -209,17 +216,32 @@ const AdminDashboard = () => {
     useEffect(() => {
         let buffer = '';
         let timeoutId = null;
+        // Waktu karakter terakhir dikirim — dipakai untuk deteksi scanner vs. ketikan manual
+        let lastKeyTime = 0;
 
         const handleKeyDown = (e) => {
-            // Abaikan input jika user sedang mengetik di form (search box / manual lookup)
-            const activeTag = document.activeElement.tagName;
-            if (activeTag === 'INPUT' || activeTag === 'TEXTAREA') return;
+            const now = Date.now();
+            const activeEl = document.activeElement;
+            const activeTag = activeEl.tagName;
+
+            // Jika user sedang mengetik manual di salah satu input (bukan scanner), abaikan
+            // Kecuali: input yang sedang aktif adalah search input produk — biarkan Enter normal
+            const isInSearchInput = activeEl === searchInputRef.current;
+            const isInOtherInput = (activeTag === 'INPUT' || activeTag === 'TEXTAREA') && !isInSearchInput;
+            if (isInOtherInput) return;
+
+            // Deteksi apakah ini scanner: interval antar-karakter < 50ms
+            const isScannerSpeed = (now - lastKeyTime) < 50;
+            lastKeyTime = now;
 
             if (e.key === 'Enter') {
                 clearTimeout(timeoutId);
                 if (buffer.length > 0) {
                     const scannedText = buffer.trim();
                     buffer = '';
+
+                    // Jika Enter dilakukan dari search input saat ada exact SKU match, biarkan dropdown handle
+                    if (isInSearchInput) return;
 
                     // 1. Cek apakah ini JSON string dari QR Code Member
                     try {
@@ -229,27 +251,44 @@ const AdminDashboard = () => {
                             fetchMember(String(parsed.no_anggota));
                             return;
                         }
-                    } catch(err) { /* Bukan JSON, lanjut cek SKU produk */ }
+                    } catch (err) { /* Bukan JSON, lanjut cek SKU produk */ }
 
-                    // 2. Cari sebagai SKU Produk
+                    // 2. Cari sebagai SKU Produk (exact match)
                     const foundProd = inventory.find(p => p.sku === scannedText);
                     if (foundProd) {
                         addToCart(foundProd);
                         dispatch(addNotification({ message: `✅ Ditambahkan: ${foundProd.name}`, type: 'success' }));
-                    } else if (!isNaN(Number(scannedText)) || scannedText.startsWith('MEM')) {
-                        // 3. Angka murni atau prefix MEM → lookup anggota
+                        setSearchQuery('');
+                        return;
+                    }
+
+                    // 3. Angka murni atau prefix MEM → lookup anggota
+                    if (!isNaN(Number(scannedText)) || scannedText.startsWith('MEM')) {
                         dispatch(addNotification({ message: `🔍 Mencari anggota ID: ${scannedText}...`, type: 'info' }));
                         fetchMember(scannedText);
-                    } else {
-                        dispatch(addNotification({ message: `⚠️ SKU/ID tidak dikenali: ${scannedText}`, type: 'error' }));
+                        return;
                     }
+
+                    // 4. Tidak dikenali → isi search box dan fokus agar user bisa melihat hasil
+                    setSearchQuery(scannedText);
+                    setTimeout(() => searchInputRef.current?.focus(), 50);
+                    dispatch(addNotification({ message: `⚠️ SKU tidak dikenali, cari manual: ${scannedText}`, type: 'error' }));
                 }
-            } else if (e.key.length === 1) {
+            } else if (e.key.length === 1 && !isInSearchInput) {
+                // Hanya buffer karakter dari scanner (tidak dari search input)
                 buffer += e.key;
-                // Reset timeout: buffer dibersihkan jika tidak ada input selama 100ms
+                // Reset timeout: buffer dibersihkan jika tidak ada input selama 150ms
                 // (Scanner fisik mengirim semua karakter dalam <50ms; manusia umumnya >150ms per karakter)
                 clearTimeout(timeoutId);
-                timeoutId = setTimeout(() => { buffer = ''; }, 100);
+                timeoutId = setTimeout(() => {
+                    // Jika buffer terisi tapi belum ada Enter (scanner aneh / partial),
+                    // dan panjang buffer ≥ 3 karakter → coba tampilkan di searchbox
+                    if (buffer.trim().length >= 3) {
+                        setSearchQuery(buffer.trim());
+                        setTimeout(() => searchInputRef.current?.focus(), 50);
+                    }
+                    buffer = '';
+                }, 150);
             }
         };
 
@@ -274,10 +313,10 @@ const AdminDashboard = () => {
             />
 
             {/* Receipt Modal */}
-            <ReceiptModal 
-                transactionId={currentTxId} 
-                isOpen={receiptModalOpen} 
-                onClose={() => setReceiptModalOpen(false)} 
+            <ReceiptModal
+                transactionId={currentTxId}
+                isOpen={receiptModalOpen}
+                onClose={() => setReceiptModalOpen(false)}
             />
 
             {/* Checkout Confirm Modal */}
@@ -302,7 +341,7 @@ const AdminDashboard = () => {
                     </div>
                 </div>
             )}
-            
+
             <main className="admin-main">
                 <div className="dashboard-grid">
                     {/* Left Section: Transaction Flow */}
@@ -310,17 +349,25 @@ const AdminDashboard = () => {
                         {/* Search Bar for manual product input */}
                         <div className="search-container" style={{ position: 'relative' }}>
                             <span className="material-symbols-outlined search-icon">search</span>
-                            <input 
-                                className="search-input" 
-                                placeholder="Ketik Cari SKU atau Nama Produk untuk tambah manual..." 
+                            <input
+                                ref={searchInputRef}
+                                id="sku-search-input"
+                                className="search-input"
+                                placeholder="Scan barcode atau ketik SKU / Nama Produk..."
                                 type="text"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Escape') {
+                                        setSearchQuery('');
+                                        e.currentTarget.blur();
+                                    }
+                                }}
                             />
                             {searchQuery && (
                                 <div className="manual-search-results">
                                     {filteredProducts.slice(0, 5).map(prod => (
-                                        <div key={prod.id} className="search-result-item" onClick={() => {addToCart(prod); setSearchQuery('');}}>
+                                        <div key={prod.id} className="search-result-item" onClick={() => { addToCart(prod); setSearchQuery(''); }}>
                                             <div className="search-result-img-wrapper">
                                                 {prod.image_url ? (
                                                     <img src={prod.image_url} alt="" className="search-result-img" />
@@ -341,15 +388,22 @@ const AdminDashboard = () => {
                             )}
                         </div>
 
-                        {/* Scanner Trigger Button */}
-                        <section className="scan-area scan-area--clickable" onClick={() => setScanModalOpen(true)} role="button" tabIndex={0} onKeyDown={e => e.key === 'Enter' && setScanModalOpen(true)}>
+                        {/* Scanner Info Bar — no longer opens a popup for product scan */}
+                        <section
+                            className="scan-area scan-area--clickable"
+                            onClick={() => searchInputRef.current?.focus()}
+                            role="button"
+                            tabIndex={0}
+                            onKeyDown={e => e.key === 'Enter' && searchInputRef.current?.focus()}
+                            title="Klik untuk fokus ke input SKU — lalu arahkan scanner ke barcode produk"
+                        >
                             <div>
                                 <h2 className="scan-title">Scanner Ready</h2>
-                                <p className="scan-subtitle">Klik untuk membuka mode scan, atau sorot barcode/QR langsung ke halaman ini.</p>
+                                <p className="scan-subtitle">Arahkan scanner barcode produk ke halaman ini — produk ditemukan otomatis masuk keranjang.</p>
                             </div>
-                            <div className="scan-icon-wrapper scan-btn-launch">
+                            <div className="scan-icon-wrapper" style={{ cursor: 'default', flexDirection: 'column', gap: '0.2rem', width: '4rem', height: '4rem' }}>
                                 <span className="material-symbols-outlined scan-icon-pulse">barcode_scanner</span>
-                                <span className="scan-launch-label">Buka</span>
+                                <span className="scan-launch-label">AKTIF</span>
                             </div>
                         </section>
 
@@ -357,7 +411,7 @@ const AdminDashboard = () => {
                         <section className="active-cart">
                             <div className="cart-header">
                                 <h2 className="cart-title">Keranjang Belanja</h2>
-                                <span className="cart-badge">{cart.reduce((a,c)=>a+c.qty,0)} Items Terpilih</span>
+                                <span className="cart-badge">{cart.reduce((a, c) => a + c.qty, 0)} Items Terpilih</span>
                             </div>
 
                             <div className="cart-table-container">
@@ -448,9 +502,9 @@ const AdminDashboard = () => {
                                                     </label>
                                                 </div>
                                             )}
-                                            <button className="flex items-center justify-center w-full gap-2 mt-4 py-2 px-4 rounded-xl font-bold text-sm transition" 
+                                            <button className="flex items-center justify-center w-full gap-2 mt-4 py-2 px-4 rounded-xl font-bold text-sm transition"
                                                 style={{ backgroundColor: 'rgba(239, 68, 68, 0.15)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.3)' }}
-                                                onClick={() => {setMember(null); setUsePoints(false);}}
+                                                onClick={() => { setMember(null); setUsePoints(false); }}
                                                 onMouseOver={(e) => { e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.25)' }}
                                                 onMouseOut={(e) => { e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.15)' }}
                                             >
@@ -464,9 +518,9 @@ const AdminDashboard = () => {
                                         <h2 className="ident-title mb-2">Identifikasi Anggota</h2>
                                         <div className="manual-member-lookup mb-4">
                                             <div className="flex-row">
-                                                <input 
-                                                    type="text" 
-                                                    className="form-input flex-1" 
+                                                <input
+                                                    type="text"
+                                                    className="form-input flex-1"
                                                     placeholder="UID / No. HP"
                                                     value={manualLookupText}
                                                     onChange={e => setManualLookupText(e.target.value)}
@@ -491,7 +545,7 @@ const AdminDashboard = () => {
                         {/* Transaction Summary Block */}
                         <section className="transaction-summary">
                             <h2 className="summary-title">Ringkasan Biaya</h2>
-                            
+
                             <div className="summary-lines">
                                 <div className="summary-line">
                                     <span className="line-label">Subtotal</span>
@@ -513,9 +567,9 @@ const AdminDashboard = () => {
                                 <span className="total-label">Total Pembayaran</span>
                                 <span className="total-value">{fRupiah(total)}</span>
                             </div>
-                            
+
                             {member && cart.length > 0 && (
-                                <div style={{ textAlign:'center', fontSize:'0.8rem', color:'#16a34a', fontWeight:'bold', marginTop:'0.5rem' }}>
+                                <div style={{ textAlign: 'center', fontSize: '0.8rem', color: '#16a34a', fontWeight: 'bold', marginTop: '0.5rem' }}>
                                     + {fRupiah(pointsEarned)} poin akan ditambahkan ke akun member
                                 </div>
                             )}
