@@ -70,14 +70,23 @@ const AdminMasterData = () => {
         }
     };
 
-    const handleDelete = async () => {
+    const handleToggleActive = async () => {
+        if (!deleteTarget) return;
+        const newStatus = !deleteTarget.is_active;
         try {
-            await axiosInstance.delete(`/api/admin/${deleteTarget.id}`);
-            dispatch(addNotification({ message: 'Admin dinonaktifkan', type: 'success' }));
+            await axiosInstance.put(`/api/admin/${deleteTarget.id}`, {
+                nama: deleteTarget.nama,
+                unit: deleteTarget.unit || '',
+                email: deleteTarget.email || '',
+                no_telpon: deleteTarget.no_telpon || '',
+                type_user: deleteTarget.type_user,
+                is_active: newStatus
+            });
+            dispatch(addNotification({ message: newStatus ? 'Admin berhasil diaktifkan' : 'Admin berhasil dinonaktifkan', type: 'success' }));
             setDeleteTarget(null);
             fetchAdmins();
-        } catch (err) {
-            dispatch(addNotification({ message: 'Gagal menonaktifkan admin', type: 'error' }));
+        } catch {
+            dispatch(addNotification({ message: 'Gagal mengubah status admin', type: 'error' }));
         }
     };
 
@@ -93,13 +102,34 @@ const AdminMasterData = () => {
         { header: 'Username', accessor: 'username', render: (a) => <code style={{ background: '#f3f4f6', padding: '0.15rem 0.4rem', borderRadius: '0.25rem', fontSize: '0.8rem' }}>{a.username}</code> },
         { header: 'Role', accessor: 'type_user', render: (a) => fRoleBadge(a.type_user) },
         { header: 'Kontak', accessor: 'email', render: (a) => <><div style={{ fontSize: '0.8rem' }}>{a.email || '-'}</div><div style={{ fontSize: '0.75rem', color: '#6b7280' }}>{a.no_telpon || '-'}</div></> },
-        { header: 'Status', accessor: 'is_active', render: (a) => <span style={{ background: a.is_active ? '#dcfce7' : '#fee2e2', color: a.is_active ? '#16a34a' : '#dc2626', padding: '0.2rem 0.5rem', borderRadius: '2rem', fontSize: '0.7rem', fontWeight: 800 }}>{a.is_active ? 'Aktif' : 'Nonaktif'}</span> },
+        { header: 'Status', accessor: 'is_active', render: (a) => (
+            <button
+                onClick={() => setDeleteTarget(a)}
+                style={{
+                    background: a.is_active ? '#dcfce7' : '#fee2e2',
+                    color: a.is_active ? '#16a34a' : '#dc2626',
+                    padding: '0.25rem 0.75rem',
+                    borderRadius: '2rem',
+                    fontSize: '0.7rem',
+                    fontWeight: 800,
+                    border: `1.5px solid ${a.is_active ? '#bbf7d0' : '#fecaca'}`,
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.3rem'
+                }}
+                title={a.is_active ? 'Klik untuk nonaktifkan' : 'Klik untuk aktifkan'}
+            >
+                <span className="material-symbols-outlined" style={{ fontSize: '0.85rem' }}>{a.is_active ? 'check_circle' : 'cancel'}</span>
+                {a.is_active ? 'Aktif' : 'Nonaktif'}
+            </button>
+        )},
         {
             header: 'Aksi', accessor: 'actions', cellClassName: 'text-center', className: 'text-center',
             render: (a) => (
                 <div className="action-flex">
                     <button className="material-symbols-outlined icon-btn hover-primary" onClick={() => handleOpen(a)}>edit</button>
-                    <button className="material-symbols-outlined icon-btn hover-error" onClick={() => setDeleteTarget(a)} disabled={a.type_user === 'admin'}>person_off</button>
                 </div>
             )
         }
@@ -188,12 +218,28 @@ const AdminMasterData = () => {
         {deleteTarget && (
             <div className="modal-overlay z-modal">
                 <div className="confirm-modal">
-                    <div className="confirm-icon-wrapper"><span className="material-symbols-outlined confirm-icon">person_off</span></div>
-                    <h3 className="confirm-title" style={{ color: 'var(--color-on-surface)' }}>Nonaktifkan Admin?</h3>
-                    <p className="confirm-desc" style={{ color: 'var(--color-on-surface-variant)' }}>Admin <strong>"{deleteTarget.nama}"</strong> akan dinonaktifkan dan tidak bisa login.</p>
+                    <div className="confirm-icon-wrapper" style={{ background: deleteTarget.is_active ? '#fee2e2' : '#dcfce7' }}>
+                        <span className="material-symbols-outlined confirm-icon" style={{ color: deleteTarget.is_active ? '#dc2626' : '#16a34a' }}>
+                            {deleteTarget.is_active ? 'person_off' : 'person_add'}
+                        </span>
+                    </div>
+                    <h3 className="confirm-title" style={{ color: 'var(--color-on-surface)' }}>
+                        {deleteTarget.is_active ? 'Nonaktifkan Admin?' : 'Aktifkan Admin?'}
+                    </h3>
+                    <p className="confirm-desc" style={{ color: 'var(--color-on-surface-variant)' }}>
+                        Admin <strong>"{deleteTarget.nama}"</strong> akan {deleteTarget.is_active ? 'dinonaktifkan dan tidak bisa login.' : 'diaktifkan kembali dan bisa login.'}
+                    </p>
                     <div className="confirm-actions">
                         <button className="btn-cancel" onClick={() => setDeleteTarget(null)}>Batal</button>
-                        <button className="btn-danger" onClick={handleDelete} style={{ backgroundColor: 'var(--color-error)' }}><span className="material-symbols-outlined" style={{ color: 'white' }}>person_off</span> Nonaktifkan</button>
+                        {deleteTarget.is_active ? (
+                            <button className="btn-danger" onClick={handleToggleActive} style={{ background: 'var(--color-error)' }}>
+                                <span className="material-symbols-outlined" style={{ color: 'white' }}>person_off</span> Nonaktifkan
+                            </button>
+                        ) : (
+                            <button className="btn-save" onClick={handleToggleActive} style={{ background: '#16a34a' }}>
+                                <span className="material-symbols-outlined" style={{ color: 'white' }}>person_add</span> Aktifkan
+                            </button>
+                        )}
                     </div>
                 </div>
             </div>

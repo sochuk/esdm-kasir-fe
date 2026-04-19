@@ -34,9 +34,9 @@ function App() {
     if (token && !isAuthenticated) {
       axiosInstance.get('/api/auth/me')
         .then(res => dispatch(loginSuccess({ ...res.data, _token: token })))
-        .catch(() => { 
-            localStorage.removeItem('token'); 
-            dispatch(logout()); 
+        .catch(() => {
+          localStorage.removeItem('token');
+          dispatch(logout());
         });
     }
   }, [dispatch, isAuthenticated]);
@@ -67,10 +67,10 @@ function App() {
         <div className="splash-content">
           <div className="splash-logo">
             <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: '4rem', height: '4rem', color: 'var(--color-primary)' }}>
-              <circle cx="20" cy="20" r="18" stroke="currentColor" strokeWidth="2.5" fill="none"/>
-              <path d="M20 6 L20 34 M6 20 L34 20" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-              <path d="M11 11 L29 29 M29 11 L11 29" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" opacity="0.5"/>
-              <circle cx="20" cy="20" r="5" fill="currentColor"/>
+              <circle cx="20" cy="20" r="18" stroke="currentColor" strokeWidth="2.5" fill="none" />
+              <path d="M20 6 L20 34 M6 20 L34 20" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+              <path d="M11 11 L29 29 M29 11 L11 29" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" opacity="0.5" />
+              <circle cx="20" cy="20" r="5" fill="currentColor" />
             </svg>
           </div>
           <h1 className="splash-title" style={{ fontSize: '1.3rem', lineHeight: '1.3' }}>Koperasi Konsumen Pegawai KESDM</h1>
@@ -97,19 +97,19 @@ function App() {
       <Routes>
         {/* Login */}
         <Route path="/login" element={<Login />} />
-        
+
         {/* Member */}
         <Route path="/member/profile" element={isAuthenticated && userRole === 'member' ? <MemberProfile /> : <Navigate to="/login" replace />} />
 
         {/* Admin Routes Wrapper */}
         <Route element={<AdminRoute element={<AdminLayout />} />}>
-            <Route path="/admin/dashboard" element={<AdminDashboard />} />
-            <Route path="/admin/transaksi" element={<AdminTransaksi />} />
-            <Route path="/admin/profil" element={<AdminProfil />} />
-            <Route path="/admin/inventaris" element={<AdminRoute element={<AdminInventaris />} fullAdminOnly />} />
-            <Route path="/admin/profit" element={<AdminRoute element={<AdminProfitProduk />} fullAdminOnly />} />
-            <Route path="/admin/master-data" element={<AdminRoute element={<AdminMasterData />} fullAdminOnly />} />
-            <Route path="/admin/anggota" element={<AdminRoute element={<AdminMasterAnggota />} fullAdminOnly />} />
+          <Route path="/admin/dashboard" element={<AdminDashboard />} />
+          <Route path="/admin/transaksi" element={<AdminTransaksi />} />
+          <Route path="/admin/profil" element={<AdminProfil />} />
+          <Route path="/admin/inventaris" element={<AdminRoute element={<AdminInventaris />} fullAdminOnly />} />
+          <Route path="/admin/profit" element={<AdminRoute element={<AdminProfitProduk />} fullAdminOnly />} />
+          <Route path="/admin/master-data" element={<AdminRoute element={<AdminMasterData />} fullAdminOnly />} />
+          <Route path="/admin/anggota" element={<AdminRoute element={<AdminMasterAnggota />} fullAdminOnly />} />
         </Route>
 
         {/* Catch-all */}
