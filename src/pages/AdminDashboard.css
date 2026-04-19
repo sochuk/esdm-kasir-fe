@@ -1,16 +1,4 @@
-.admin-layout {
-    display: flex;
-    min-height: 100vh;
-    background-color: var(--color-surface);
-    color: var(--color-on-surface);
-}
-
-.admin-main {
-    margin-left: 16rem; /* Adjust for Sidebar */
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-}
+@import '../styles/AdminLayout.css';
 
 .dashboard-grid {
     padding: 1rem;
@@ -393,16 +381,7 @@
     opacity: 0.6;
 }
 
-.ident-glow {
-    position: absolute;
-    right: -5rem;
-    top: -5rem;
-    width: 12rem;
-    height: 12rem;
-    background-color: rgba(109, 90, 0, 0.2); /* primary with 20% opacity */
-    filter: blur(50px);
-    border-radius: 9999px;
-}
+/* Removed Glow to prevent interaction block */
 
 /* Transaction Summary */
 .transaction-summary {

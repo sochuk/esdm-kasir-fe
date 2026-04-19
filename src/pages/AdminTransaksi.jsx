@@ -1,11 +1,21 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { addNotification } from '../features/ui/uiSlice';
-import AdminSidebar from '../components/AdminSidebar';
 import DataTable from '../components/DataTable';
 import ReceiptModal from '../components/ReceiptModal';
 import axiosInstance from '../api/axiosInstance';
 import './AdminInventaris.css';
+import './AdminTransaksi.css';
+
+// Helper: Format ke WIB
+const toWIB = (dateStr) => {
+    const d = new Date(dateStr);
+    return {
+        date: d.toLocaleDateString('id-ID', { timeZone: 'Asia/Jakarta', day: 'numeric', month: 'long', year: 'numeric' }),
+        time: d.toLocaleTimeString('id-ID', { timeZone: 'Asia/Jakarta', hour: '2-digit', minute: '2-digit' }) + ' WIB',
+        dateShort: d.toLocaleDateString('id-ID', { timeZone: 'Asia/Jakarta' })
+    };
+};
 
 const AdminTransaksi = () => {
     const dispatch = useDispatch();
@@ -13,6 +23,13 @@ const AdminTransaksi = () => {
     const [loading, setLoading] = useState(true);
     const [receiptModalOpen, setReceiptModalOpen] = useState(false);
     const [selectedTxId, setSelectedTxId] = useState(null);
+
+    // Use WIB timezone for "today" calculation
+    const now = new Date();
+    const todayISO = now.toLocaleDateString('sv-SE', { timeZone: 'Asia/Jakarta' }); // 'sv-SE' gives YYYY-MM-DD format
+    const [startDate, setStartDate] = useState(todayISO);
+    const [endDate, setEndDate] = useState(todayISO);
+    const [rangeMode, setRangeMode] = useState('today'); // 'today' | 'range'
 
     useEffect(() => {
         fetchHistory();
@@ -38,24 +55,91 @@ const AdminTransaksi = () => {
 
     const fRupiah = (num) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(num || 0);
 
-    // Filter "Today Only" for metrics
-    const todayStr = new Date().toISOString().slice(0, 10);
-    const todayTransactions = transactions.filter(t => t.created_date.startsWith(todayStr));
-    const todayTotalSales = todayTransactions.reduce((acc, t) => acc + Number(t.total), 0);
-    const cardSales = todayTransactions.filter(t => t.payment_method === 'card').reduce((acc, t) => acc + Number(t.total), 0);
-    const cashSales = todayTransactions.filter(t => t.payment_method === 'cash').reduce((acc, t) => acc + Number(t.total), 0);
-    const qrisSales = todayTransactions.filter(t => t.payment_method === 'qr').reduce((acc, t) => acc + Number(t.total), 0);
+    // === FILTER berdasarkan range tanggal ===
+    const filteredTx = transactions.filter(t => {
+        const txISO = new Date(t.created_date).toLocaleDateString('sv-SE', { timeZone: 'Asia/Jakarta' });
+        if (rangeMode === 'today') {
+            return txISO === todayISO;
+        }
+        return txISO >= startDate && txISO <= endDate;
+    });
+
+    // Metrics dari data terfilter
+    const totalSales = filteredTx.reduce((acc, t) => acc + Number(t.total), 0);
+    const cardSales = filteredTx.filter(t => t.payment_method === 'card').reduce((acc, t) => acc + Number(t.total), 0);
+    const cashSales = filteredTx.filter(t => t.payment_method === 'cash').reduce((acc, t) => acc + Number(t.total), 0);
+    const qrisSales = filteredTx.filter(t => t.payment_method === 'qr').reduce((acc, t) => acc + Number(t.total), 0);
+
+    // === EXPORT EXCEL ===
+    const handleExportExcel = async () => {
+        try {
+            const XLSX = await import('xlsx');
+
+            // Group per tanggal untuk summary
+            const byDate = {};
+            filteredTx.forEach(t => {
+                const dayKey = new Date(t.created_date).toLocaleDateString('id-ID', {
+                    timeZone: 'Asia/Jakarta', day: 'numeric', month: 'long', year: 'numeric'
+                });
+                if (!byDate[dayKey]) byDate[dayKey] = { date: dayKey, count: 0, total: 0 };
+                byDate[dayKey].count++;
+                byDate[dayKey].total += Number(t.total);
+            });
+
+            // Sheet 1 — Detail transaksi
+            const detailRows = filteredTx.map((t, i) => ({
+                'No': i + 1,
+                'Tanggal': new Date(t.created_date).toLocaleDateString('id-ID', { timeZone: 'Asia/Jakarta', day: 'numeric', month: 'long', year: 'numeric' }),
+                'Jam': new Date(t.created_date).toLocaleTimeString('id-ID', { timeZone: 'Asia/Jakarta', hour: '2-digit', minute: '2-digit' }) + ' WIB',
+                'No. Invoice': t.invoice_number,
+                'Member': t.member_name || '-',
+                'Metode Bayar': String(t.payment_method || '').toUpperCase(),
+                'Operator': t.created_by || '-',
+                'Total (Rp)': Number(t.total),
+            }));
+
+            // Sheet 2 — Summary per tanggal
+            const summaryRows = Object.values(byDate).map(d => ({
+                'Tanggal': d.date,
+                'Jumlah Transaksi': d.count,
+                'Total Pemasukan (Rp)': d.total,
+            }));
+            // Baris grand total untuk summary
+            summaryRows.push({
+                'Tanggal': 'TOTAL KESELURUHAN',
+                'Jumlah Transaksi': filteredTx.length,
+                'Total Pemasukan (Rp)': totalSales,
+            });
+
+            const wb = XLSX.utils.book_new();
+            const wsDetail = XLSX.utils.json_to_sheet(detailRows);
+            const wsSummary = XLSX.utils.json_to_sheet(summaryRows);
+
+            XLSX.utils.book_append_sheet(wb, wsDetail, 'Transaksi Detail');
+            XLSX.utils.book_append_sheet(wb, wsSummary, 'Ringkasan Per Tanggal');
+
+            const fileName = `Transaksi_KESDM_${startDate}_sd_${endDate}.xlsx`;
+            XLSX.writeFile(wb, fileName);
+            dispatch(addNotification({ message: `✅ File Excel berhasil diekspor: ${fileName}`, type: 'success' }));
+        } catch (err) {
+            console.error('Export error:', err);
+            dispatch(addNotification({ message: 'Gagal ekspor Excel. Pastikan library xlsx terpasang.', type: 'error' }));
+        }
+    };
 
     const transaksiColumns = [
         {
             header: 'Waktu Transaksi',
             accessor: 'created_date',
-            render: (tx) => (
-                <>
-                    <div className="font-bold" style={{ color: '#111827', fontSize: '0.85rem' }}>{new Date(tx.created_date).toLocaleDateString('id-ID', {day: 'numeric', month:'long', year:'numeric'})}</div>
-                    <div className="text-xs" style={{ color: '#6b7280', marginTop: '0.1rem', fontWeight: 600, fontSize: '0.75rem' }}>Pukul {new Date(tx.created_date).toLocaleTimeString('id-ID')}</div>
-                </>
-            )
+            render: (tx) => {
+                const { date, time } = toWIB(tx.created_date);
+                return (
+                    <>
+                        <div className="font-bold" style={{ color: '#111827', fontSize: '0.85rem' }}>{date}</div>
+                        <div className="text-xs" style={{ color: '#6b7280', marginTop: '0.1rem', fontWeight: 600, fontSize: '0.75rem' }}>Pukul {time}</div>
+                    </>
+                );
+            }
         },
         {
             header: 'No. Invoice',
@@ -111,33 +195,61 @@ const AdminTransaksi = () => {
     ];
 
     return (
-        <div className="admin-layout">
-            <AdminSidebar />
-            
-            <main className="admin-main inventory-main transition-all">
-                <div className="inventory-container" style={{ maxWidth: '100%', padding: '0 2rem' }}>
+        <>
+            <div className="inventory-container">
                     {/* Header */}
-                    <div className="inventory-header" style={{ borderBottom: '2px solid rgba(0,0,0,0.05)', paddingBottom: '1rem', marginBottom: '1.5rem' }}>
+                    <div className="inventory-header">
                         <div>
-                            <h1 className="inventory-title" style={{ fontSize: '2.2rem', fontWeight: '900', color: '#18181b' }}>Riwayat Transaksi</h1>
-                            <p className="inventory-subtitle" style={{ fontSize: '1rem', color: '#6b7280' }}>Laporan omset harian & pencetakan struk</p>
+                            <h1 className="inventory-title">Riwayat Transaksi</h1>
+                            <p className="inventory-subtitle">Laporan omset & pencetakan struk — {filteredTx.length} transaksi ditemukan</p>
                         </div>
-                        <div className="header-actions">
+                        <div className="header-actions" style={{ gap: '0.75rem', flexWrap: 'wrap' }}>
+                            <button className="btn-primary" style={{ padding: '0.75rem 1.5rem', fontSize: '1rem', borderRadius: '0.75rem', boxShadow: '0 4px 12px rgba(253, 212, 0, 0.4)', background: '#16a34a', color: '#fff' }} onClick={handleExportExcel}>
+                                <span className="material-symbols-outlined" style={{ fontSize: '1.2rem' }}>download</span> 
+                                <span className="font-bold">Export Excel</span>
+                            </button>
                             <button className="btn-primary" style={{ padding: '0.75rem 1.5rem', fontSize: '1rem', borderRadius: '0.75rem', boxShadow: '0 4px 12px rgba(253, 212, 0, 0.4)' }} onClick={fetchHistory}>
                                 <span className="material-symbols-outlined" style={{ fontSize: '1.4rem' }}>sync</span> 
-                                <span className="hidden-mobile font-bold">Sinkronisasi Data</span>
+                                <span className="hidden-mobile font-bold">Sinkronisasi</span>
                             </button>
                         </div>
+                    </div>
+
+                    {/* Date Range Filter */}
+                    <div style={{ background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: '0.75rem', padding: '1rem 1.25rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+                        <span className="material-symbols-outlined" style={{ color: '#6b7280', fontSize: '1.2rem' }}>calendar_month</span>
+                        <span style={{ fontWeight: 700, fontSize: '0.85rem', color: '#374151' }}>Filter Tanggal:</span>
+                        <button onClick={() => setRangeMode('today')} style={{ padding: '0.4rem 1rem', borderRadius: '0.5rem', border: '1px solid', fontWeight: 700, fontSize: '0.8rem', cursor: 'pointer', backgroundColor: rangeMode === 'today' ? '#111827' : '#fff', color: rangeMode === 'today' ? '#fdd400' : '#374151', borderColor: rangeMode === 'today' ? '#111827' : '#d1d5db', transition: 'all 0.15s' }}>
+                            Hari Ini
+                        </button>
+                        <button onClick={() => setRangeMode('range')} style={{ padding: '0.4rem 1rem', borderRadius: '0.5rem', border: '1px solid', fontWeight: 700, fontSize: '0.8rem', cursor: 'pointer', backgroundColor: rangeMode === 'range' ? '#111827' : '#fff', color: rangeMode === 'range' ? '#fdd400' : '#374151', borderColor: rangeMode === 'range' ? '#111827' : '#d1d5db', transition: 'all 0.15s' }}>
+                            Rentang Tanggal
+                        </button>
+                        {rangeMode === 'range' && (
+                            <>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                    <label style={{ fontSize: '0.8rem', fontWeight: 600, color: '#6b7280' }}>Dari:</label>
+                                    <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} style={{ padding: '0.35rem 0.6rem', borderRadius: '0.4rem', border: '1px solid #d1d5db', fontSize: '0.85rem', fontWeight: 600 }}/>
+                                </div>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                    <label style={{ fontSize: '0.8rem', fontWeight: 600, color: '#6b7280' }}>Sampai:</label>
+                                    <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} style={{ padding: '0.35rem 0.6rem', borderRadius: '0.4rem', border: '1px solid #d1d5db', fontSize: '0.85rem', fontWeight: 600 }}/>
+                                </div>
+                            </>
+                        )}
+                        <span style={{ marginLeft: 'auto', fontSize: '0.8rem', color: '#6b7280', fontWeight: 600 }}>
+                            {rangeMode === 'today' ? 'Menampilkan: Hari ini' : `Menampilkan: ${startDate} s/d ${endDate}`}
+                        </span>
                     </div>
 
                     {/* Metrics Grid */}
                     <div className="analytics-grid-reduced" style={{ gap: '1rem', marginBottom: '1.5rem' }}>
                         <div className="analytic-card" style={{ background: 'linear-gradient(135deg, #18181b 0%, #27272a 100%)', color: 'white', border: 'none', padding: '1rem', boxShadow: '0 8px 16px rgba(0,0,0,0.12)', borderRadius: '0.75rem' }}>
-                            <span className="analytic-label text-gray-400" style={{ fontSize: '0.65rem', letterSpacing: '0.05em', fontWeight: 800 }}>TOTAL OMSET HARI INI</span>
-                            <div className="analytic-value" style={{ color: 'var(--color-primary-fixed)', fontSize: '1.5rem', margin: '0.25rem 0', fontWeight: '900' }}>{fRupiah(todayTotalSales)}</div>
+                            <span className="analytic-label text-gray-400" style={{ fontSize: '0.65rem', letterSpacing: '0.05em', fontWeight: 800 }}>TOTAL OMSET</span>
+                            <div className="analytic-value" style={{ color: 'var(--color-primary-fixed)', fontSize: '1.5rem', margin: '0.25rem 0', fontWeight: '900' }}>{fRupiah(totalSales)}</div>
                             <div className="analytic-trend">
                                 <span className="material-symbols-outlined text-primary" style={{ fontSize: '0.9rem' }}>point_of_sale</span>
-                                <span className="font-body text-gray-300 ml-1" style={{ fontSize: '0.65rem' }}>Terakumulasi hari ini</span>
+                                <span className="font-body text-gray-300 ml-1" style={{ fontSize: '0.65rem' }}>Total terpilih</span>
                             </div>
                         </div>
 
@@ -161,7 +273,7 @@ const AdminTransaksi = () => {
 
                         <div className="analytic-card" style={{ background: '#fff', borderLeft: '4px solid #9333ea', padding: '1rem', boxShadow: '0 4px 8px rgba(0,0,0,0.04)', borderRadius: '0.75rem' }}>
                             <span className="analytic-label" style={{ color: '#9333ea', fontWeight: '800', fontSize: '0.65rem', letterSpacing: '0.05em' }}>TOTAL TRANSAKSI</span>
-                            <div className="analytic-value" style={{ color: '#1f2937', fontSize: '1.4rem', margin: '0.25rem 0', fontWeight: '900' }}>{todayTransactions.length}</div>
+                            <div className="analytic-value" style={{ color: '#1f2937', fontSize: '1.4rem', margin: '0.25rem 0', fontWeight: '900' }}>{filteredTx.length}</div>
                             <div className="analytic-trend">
                                 <span className="material-symbols-outlined op-60" style={{ color: '#9333ea', fontSize: '0.9rem' }}>receipt_long</span>
                                 <span className="op-60 font-body ml-1" style={{ fontSize: '0.65rem' }}>Struk Terbit</span>
@@ -171,27 +283,26 @@ const AdminTransaksi = () => {
 
                     {/* Table Section */}
                     <DataTable 
-                        data={transactions}
+                        data={filteredTx}
                         columns={transaksiColumns}
                         searchable={true}
                         searchKeys={['invoice_number', 'member_name', 'created_by']}
                         searchPlaceholder="Cari no invoice, member, kasir..."
                         loading={loading}
-                        emptyMessage="Belum ada riwayat transaksi ditemukan."
+                        emptyMessage="Belum ada transaksi pada periode ini."
                         itemsPerPage={10}
                         rowClassName={() => "row-normal bg-white hover:bg-gray-50"}
                     />
                 </div>
-            </main>
-
-            {/* Receipt Modal */}
-            <ReceiptModal 
-                transactionId={selectedTxId} 
-                isOpen={receiptModalOpen} 
-                onClose={() => setReceiptModalOpen(false)} 
-            />
-        </div>
-    );
+        
+        {/* Receipt Modal */}
+        <ReceiptModal 
+            transactionId={selectedTxId} 
+            isOpen={receiptModalOpen} 
+            onClose={() => setReceiptModalOpen(false)} 
+        />
+    </>
+);
 };
 
 export default AdminTransaksi;

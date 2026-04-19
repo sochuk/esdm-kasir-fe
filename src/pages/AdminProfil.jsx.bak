@@ -7,7 +7,7 @@ import '../styles/AdminLayout.css';
 
 const AdminProfil = () => {
     const dispatch = useDispatch();
-    const user = useSelector((state) => state.auth.user);
+    const { user } = useSelector((state) => state.auth);
     const fileInputRef = useRef(null);
 
     const [phoneModalOpen, setPhoneModalOpen] = useState(false);

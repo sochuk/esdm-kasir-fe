@@ -1,0 +1,94 @@
+/* Global Admin Layout System */
+/* NOTE: .global-sidebar and .admin-main are defined in AdminSidebar.css */
+/* This file contains shared UI components only */
+
+/* Common UI Components */
+.analytic-card {
+    background-color: var(--color-surface-container-lowest);
+    padding: 1.5rem;
+    border-radius: 0.75rem;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    border-left: 4px solid transparent;
+}
+
+.admin-container {
+    width: 100%;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.admin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.admin-title {
+    font-family: var(--font-display);
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: var(--color-inverse-surface);
+}
+
+.admin-subtitle {
+    color: var(--color-on-surface-variant);
+    font-size: 0.875rem;
+}
+
+/* Modal System (Standardized) */
+.modal-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: rgba(14, 14, 14, 0.7);
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 2rem 1rem;
+    overflow-y: auto;
+    z-index: 10000;
+}
+
+.z-modal { z-index: 10001; }
+
+.modal-content {
+    background-color: var(--color-background);
+    width: 100%;
+    max-width: 42rem;
+    border-radius: 0.75rem;
+    box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+    overflow: hidden;
+    position: relative;
+    z-index: 10002;
+}
+
+.confirm-modal {
+    background-color: var(--color-background);
+    width: 100%;
+    max-width: 24rem;
+    border-radius: 1rem;
+    box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 0.75rem;
+    position: relative;
+    z-index: 10002;
+}
+
+.btn-primary, .btn-save {
+    background-color: var(--color-primary-fixed);
+    color: var(--color-on-primary-fixed);
+    font-weight: 700;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.5rem;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}

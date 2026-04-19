@@ -1,71 +1,88 @@
-import React from 'react';
+import React, { memo, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { NavLink } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { logout } from '../features/auth/authSlice';
 import './AdminSidebar.css';
 
+const KoperasiLogo = ({ size = '1.2rem' }) => (
+    <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: size, height: size, color: 'currentColor' }}>
+        <circle cx="20" cy="20" r="18" stroke="currentColor" strokeWidth="2.5" fill="none"/>
+        <path d="M20 6 L20 34 M6 20 L34 20" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+        <circle cx="20" cy="20" r="5" fill="currentColor"/>
+    </svg>
+);
+
+const NavButton = memo(({ to, icon, label, isActive, onClick }) => (
+    <button
+        onClick={onClick}
+        className={`nav-item ${isActive ? 'nav-active' : ''}`}
+        type="button"
+    >
+        <span className="material-symbols-outlined">{icon}</span>
+        <span>{label}</span>
+    </button>
+));
+NavButton.displayName = 'NavButton';
+
 const AdminSidebar = () => {
     const dispatch = useDispatch();
-    const { user } = useSelector((state) => state.auth);
+    const navigate = useNavigate();
+    const location = useLocation();
+    const userName = useSelector((state) => state.auth.user?.name || state.auth.user?.username || 'Administrator');
+    const userRole = useSelector((state) => state.auth.user?.role);
+    const isFullAdmin = ['admin', 'super_admin'].includes(userRole);
 
-    const handleLogout = (e) => {
+    const handleNav = useCallback((to) => {
+        navigate(to);
+    }, [navigate]);
+
+    const handleLogout = useCallback((e) => {
         e.preventDefault();
         dispatch(logout());
-    };
+    }, [dispatch]);
+
+    const currentPath = location.pathname;
 
     return (
         <aside className="global-sidebar">
             <div className="sidebar-header">
-                <h1 className="sidebar-brand">ESDM Kasir</h1>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                    <div style={{ background: 'var(--color-primary-fixed)', borderRadius: '0.4rem', width: '2rem', height: '2rem', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, color: '#18181b' }}>
+                        <KoperasiLogo size="1.1rem" />
+                    </div>
+                    <div>
+                        <h1 className="sidebar-brand" style={{ fontSize: '0.72rem', lineHeight: '1.2' }}>Koperasi Konsumen<br/>Pegawai KESDM</h1>
+                    </div>
+                </div>
             </div>
 
             <div className="sidebar-profile">
-                <img 
-                    alt="Admin Profile" 
-                    className="sidebar-avatar" 
-                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuD0u-623jGvUqOD4V0fk4N5FP7ZXmxofIxyy71wpZn1QgxzHr51-0WNi-0AfmhX1dovW7ofzJUPP-0fySRLx3t70hjUNcFS2tth__1kGVsttflnbkDJMC0iwDpbNXvDeIkiglGCniA307fNwCdbxavvQ0adImVWS3hPCHK2el3rTOza-KVvzbgcxRB1HQZfqCWC-RVNrF4ZK0dPGa9or31sdkSG6AWnootUrBfGjAMcYfgaegOF2TDeMN7KfDsYK0-8uh2x0IO2Bw"
-                />
+                <div className="sidebar-avatar" style={{ background: 'var(--color-primary-fixed)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#18181b', fontWeight: 900, fontSize: '1rem' }}>
+                    {userName[0].toUpperCase()}
+                </div>
                 <div className="sidebar-identity">
-                    <p className="sidebar-name">{user?.name || user?.username || 'Administrator'}</p>
-                    <p className="sidebar-role">ADM-{user?.username || 'SYSTEM'}</p>
+                    <p className="sidebar-name">{userName}</p>
+                    <p className="sidebar-role">{userRole === 'super_admin' ? 'Super Admin' : userRole === 'kasir' ? 'Admin Kasir' : 'Administrator'}</p>
                 </div>
             </div>
 
             <nav className="sidebar-nav">
-                <NavLink 
-                    to="/admin/dashboard" 
-                    className={({ isActive }) => `nav-item ${isActive ? 'nav-active' : ''}`}
-                >
-                    <span className="material-symbols-outlined">dashboard</span>
-                    <span>Dashboard</span>
-                </NavLink>
+                <NavButton to="/admin/dashboard" icon="dashboard" label="Dashboard" isActive={currentPath === '/admin/dashboard'} onClick={() => handleNav('/admin/dashboard')} />
+                <NavButton to="/admin/transaksi" icon="receipt_long" label="Riwayat Transaksi" isActive={currentPath === '/admin/transaksi'} onClick={() => handleNav('/admin/transaksi')} />
 
-                <NavLink 
-                    to="/admin/transaksi" 
-                    className={({ isActive }) => `nav-item ${isActive ? 'nav-active' : ''}`}
-                >
-                    <span className="material-symbols-outlined">receipt_long</span>
-                    <span>Riwayat Transaksi</span>
-                </NavLink>
+                {isFullAdmin && (
+                    <>
+                        <NavButton to="/admin/inventaris" icon="inventory_2" label="Inventaris" isActive={currentPath === '/admin/inventaris'} onClick={() => handleNav('/admin/inventaris')} />
+                        <NavButton to="/admin/profit" icon="trending_up" label="Profit Produk" isActive={currentPath === '/admin/profit'} onClick={() => handleNav('/admin/profit')} />
+                        <NavButton to="/admin/anggota" icon="group" label="Master Anggota" isActive={currentPath === '/admin/anggota'} onClick={() => handleNav('/admin/anggota')} />
+                        <NavButton to="/admin/master-data" icon="manage_accounts" label="Master Admin" isActive={currentPath === '/admin/master-data'} onClick={() => handleNav('/admin/master-data')} />
+                    </>
+                )}
 
-                <NavLink 
-                    to="/admin/inventaris" 
-                    className={({ isActive }) => `nav-item ${isActive ? 'nav-active' : ''}`}
-                >
-                    <span className="material-symbols-outlined">inventory_2</span>
-                    <span>Inventaris</span>
-                </NavLink>
-
-                <NavLink 
-                    to="/admin/profil" 
-                    className={({ isActive }) => `nav-item ${isActive ? 'nav-active' : ''}`}
-                >
-                    <span className="material-symbols-outlined">person</span>
-                    <span>Profil</span>
-                </NavLink>
+                <NavButton to="/admin/profil" icon="person" label="Profil" isActive={currentPath === '/admin/profil'} onClick={() => handleNav('/admin/profil')} />
 
                 <div className="nav-bottom">
-                    <button onClick={handleLogout} className="nav-item nav-logout">
+                    <button onClick={handleLogout} className="nav-item nav-logout" type="button">
                         <span className="material-symbols-outlined">logout</span>
                         <span>Keluar</span>
                     </button>

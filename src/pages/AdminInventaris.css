@@ -1,15 +1,16 @@
-/* Inventory Main Wrapper */
+@import '../styles/AdminLayout.css';
+
+
+/* .admin-container defined in AdminLayout.css */
+
+
 .inventory-main {
-    padding: 2rem;
-    background-color: var(--color-surface);
+    /* padding managed by admin-main in AdminSidebar.css */
 }
 
 .inventory-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    display: flex;
-    flex-direction: column;
-    gap: 2rem;
+    width: 100%;
+    padding: 0.5rem 0;
 }
 
 /* Header */
@@ -17,6 +18,7 @@
     display: flex;
     justify-content: space-between;
     align-items: flex-end;
+    margin-bottom: 2rem; /* Jarak dengan elemen di bawahnya */
 }
 
 .inventory-title {
@@ -223,17 +225,7 @@
 .h-60 { height: 60%; }
 .h-85 { height: 85%; }
 
-.glow-effect {
-    position: absolute;
-    right: -1rem;
-    bottom: -1rem;
-    width: 8rem;
-    height: 8rem;
-    background-color: var(--color-primary-fixed);
-    opacity: 0.1;
-    border-radius: 50%;
-    filter: blur(24px);
-}
+/* Removed Glow Effect to fix interaction block */
 
 /* Search & Filters */
 .filters-container {
@@ -553,28 +545,7 @@
     font-weight: 700;
 }
 
-/* Modal Styles */
-.z-modal { z-index: 100; }
-
-.modal-overlay {
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background-color: rgba(14, 14, 14, 0.6);
-    backdrop-filter: blur(4px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 1rem;
-}
-
-.modal-content {
-    background-color: var(--color-background);
-    width: 100%;
-    max-width: 42rem;
-    border-radius: 0.75rem;
-    box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
-    overflow: hidden;
-}
+/* Modal Styles removed - Moved to AdminLayout.css */
 
 .modal-header {
     background-color: var(--color-inverse-surface);
@@ -585,7 +556,7 @@
 }
 
 .modal-title {
-    color: var(--color-background);
+    color: white !important;
     font-size: 1.5rem;
     font-family: var(--font-display);
     font-weight: 700;

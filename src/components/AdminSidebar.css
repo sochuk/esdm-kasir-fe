@@ -1,19 +1,43 @@
+/* ===== SIDEBAR: Fully fixed/floating, completely independent ===== */
 .global-sidebar {
     height: 100vh;
-    width: 16rem; /* 64 * 0.25rem = 16rem */
+    width: 16rem;
     position: fixed;
     left: 0;
     top: 0;
-    background-color: var(--color-surface); /* bg-stone-50 equiv */
+    background-color: var(--color-surface);
     display: flex;
     flex-direction: column;
     padding: 1rem;
     overflow-y: auto;
-    z-index: 50;
+    z-index: 9999;
     border-right: 1px solid var(--color-surface-container);
+    isolation: isolate;
 }
 
-/* Header */
+/* ===== MAIN CONTENT: Independent, just offset by sidebar width ===== */
+.admin-main {
+    margin-left: 16rem;
+    min-height: 100vh;
+    padding: 2rem 3rem;
+    background-color: var(--color-surface);
+    color: var(--color-on-surface);
+    box-sizing: border-box;
+    overflow-x: hidden;
+    width: calc(100% - 16rem);
+}
+
+
+@media (max-width: 768px) {
+    .global-sidebar {
+        display: none;
+    }
+    .admin-main {
+        margin-left: 0;
+    }
+}
+
+/* ===== Header ===== */
 .sidebar-header {
     margin-bottom: 2rem;
     padding: 1rem 0.5rem 0;
@@ -28,7 +52,7 @@
     letter-spacing: 0.05em;
 }
 
-/* Profile Badge */
+/* ===== Profile Badge ===== */
 .sidebar-profile {
     display: flex;
     align-items: center;
@@ -71,7 +95,7 @@
     font-family: var(--font-body);
 }
 
-/* Navigation */
+/* ===== Navigation ===== */
 .sidebar-nav {
     display: flex;
     flex-direction: column;
@@ -86,7 +110,7 @@
     padding: 0.75rem;
     color: var(--color-on-surface-variant);
     border-radius: 0.5rem;
-    transition: all 0.15s ease;
+    transition: background-color 0.15s ease, color 0.15s ease;
     font-family: var(--font-display);
     font-size: 0.875rem;
     text-transform: uppercase;

@@ -2,7 +2,6 @@ import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchProducts } from '../features/inventory/inventorySlice';
 import { addNotification } from '../features/ui/uiSlice';
-import AdminSidebar from '../components/AdminSidebar';
 import ScanModal from '../components/ScanModal';
 import ReceiptModal from '../components/ReceiptModal';
 import axiosInstance from '../api/axiosInstance';
@@ -16,7 +15,6 @@ const AdminDashboard = () => {
     // POS State
     const [cart, setCart] = useState([]);
     const [member, setMember] = useState(null);
-    const [usePoints, setUsePoints] = useState(false);
     const [paymentMethod, setPaymentMethod] = useState('cash');
     const [searchQuery, setSearchQuery] = useState('');
     const [manualLookupText, setManualLookupText] = useState('');
@@ -44,12 +42,12 @@ const AdminDashboard = () => {
 
     // Financial calculations
     const subtotal = cart.reduce((acc, item) => acc + (item.price * item.qty), 0);
-    const tax = 0; // Pajak 0% dulu
-    const maxPointsValue = member ? member.points : 0; // 1 point = Rp 1 (atau sudah dalam bentuk rupiah flat)
-    const applicableDiscount = (member && usePoints) ? Math.min(maxPointsValue, subtotal + tax) : 0;
-    const total = subtotal + tax - applicableDiscount;
-    const pointsEarned = member ? 100 : 0; // Flat Rp 100 points setiap transaksi
-    const pointsUsed = applicableDiscount;
+    const tax = 0; // Pajak 0%
+    const total = subtotal + tax;
+    // Poin: 100 poin per Rp10.000 - berlaku perkalian (Poin 8)
+    const pointsEarned = member ? Math.floor(total / 10000) * 100 : 0;
+    const pointsUsed = 0; // Fitur tukar poin disembunyikan (Poin 9)
+    const applicableDiscount = 0; // Poin tidak bisa dipakai kurangi harga
 
     // Formatter
     const fRupiah = (num) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(num);
@@ -117,7 +115,6 @@ const AdminDashboard = () => {
         try {
             const response = await axiosInstance.get(`/api/pos/member/lookup?qr=${encodeURIComponent(qrDataText)}`);
             setMember(response.data);
-            setUsePoints(false);
             dispatch(addNotification({ message: `✅ Member ditemukan: ${response.data.nama}`, type: 'success' }));
         } catch (err) {
             console.error(err);
@@ -141,7 +138,6 @@ const AdminDashboard = () => {
                 try {
                     const res = await axiosInstance.get(`/api/pos/member/lookup?qr=${encodeURIComponent(lookupId)}`);
                     setMember(res.data);
-                    setUsePoints(false);
                     return { type: 'member', message: `✅ Member: ${res.data.nama}` };
                 } catch {
                     return { type: 'error', message: '❌ Member tidak ditemukan di database' };
@@ -160,7 +156,6 @@ const AdminDashboard = () => {
         try {
             const res = await axiosInstance.get(`/api/pos/member/lookup?qr=${encodeURIComponent(trimmed)}`);
             setMember(res.data);
-            setUsePoints(false);
             return { type: 'member', message: `✅ Member: ${res.data.nama}` };
         } catch { /* bukan member */ }
 
@@ -201,7 +196,6 @@ const AdminDashboard = () => {
             // Reset state
             setCart([]);
             setMember(null);
-            setUsePoints(false);
             setPaymentMethod('cash');
             dispatch(fetchProducts()); // Refresh stock after purchase
         } catch (err) {
@@ -300,11 +294,7 @@ const AdminDashboard = () => {
     }, [inventory, addToCart, fetchMember, dispatch]);
 
     return (
-        <div className="admin-layout">
-            <AdminSidebar />
-
-
-
+        <>
             {/* Scan Popup Modal */}
             <ScanModal
                 isOpen={scanModalOpen}
@@ -342,8 +332,7 @@ const AdminDashboard = () => {
                 </div>
             )}
 
-            <main className="admin-main">
-                <div className="dashboard-grid">
+            <div className="dashboard-grid">
                     {/* Left Section: Transaction Flow */}
                     <div className="transaction-flow">
                         {/* Search Bar for manual product input */}
@@ -491,20 +480,13 @@ const AdminDashboard = () => {
                                                 <span className="font-bold text-primary">{member.points} pts</span>
                                             </div>
                                             <div className="flex-space py-2">
-                                                <span>Nilai Tukar</span>
-                                                <span className="font-bold">{fRupiah(maxPointsValue)}</span>
+                                                <span>Estimasi Poin Transaksi Ini</span>
+                                                <span className="font-bold text-primary">+{pointsEarned} pts</span>
                                             </div>
-                                            {cart.length > 0 && maxPointsValue > 0 && (
-                                                <div className="use-points-action mt-3 p-2 rounded-lg" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
-                                                    <label className="checkbox-container text-white" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer', margin: 0 }}>
-                                                        <input type="checkbox" checked={usePoints} onChange={(e) => setUsePoints(e.target.checked)} style={{ width: '1.2rem', height: '1.2rem', cursor: 'pointer', accentColor: 'var(--color-primary)' }} />
-                                                        <span style={{ fontSize: '0.9rem', fontWeight: 600 }}>Gunakan Poin untuk Diskon</span>
-                                                    </label>
-                                                </div>
-                                            )}
+                                            {/* Fitur tukar poin disembunyikan (Poin 9) */}
                                             <button className="flex items-center justify-center w-full gap-2 mt-4 py-2 px-4 rounded-xl font-bold text-sm transition"
                                                 style={{ backgroundColor: 'rgba(239, 68, 68, 0.15)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.3)' }}
-                                                onClick={() => { setMember(null); setUsePoints(false); }}
+                                                onClick={() => setMember(null)}
                                                 onMouseOver={(e) => { e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.25)' }}
                                                 onMouseOut={(e) => { e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.15)' }}
                                             >
@@ -583,8 +565,7 @@ const AdminDashboard = () => {
                         </section>
                     </aside>
                 </div>
-            </main>
-        </div>
+        </>
     );
 };
 

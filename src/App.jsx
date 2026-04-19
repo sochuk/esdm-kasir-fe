@@ -9,12 +9,22 @@ import AdminDashboard from './pages/AdminDashboard';
 import AdminInventaris from './pages/AdminInventaris';
 import AdminTransaksi from './pages/AdminTransaksi';
 import AdminProfil from './pages/AdminProfil';
+import AdminMasterData from './pages/AdminMasterData';
+import AdminMasterAnggota from './pages/AdminMasterAnggota';
+import AdminProfitProduk from './pages/AdminProfitProduk';
 import Toast from './components/Toast';
+import AdminLayout from './components/AdminLayout';
 import './App.css';
+
+// Helper: cek apakah role termasuk admin-level
+const isAdminLevel = (role) => ['admin', 'super_admin', 'kasir'].includes(role);
+const isFullAdmin = (role) => ['admin', 'super_admin'].includes(role);
 
 function App() {
   const dispatch = useDispatch();
-  const { isAuthenticated, user, status } = useSelector((state) => state.auth);
+  const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
+  const userRole = useSelector((state) => state.auth.user?.role);
+  const status = useSelector((state) => state.auth.status);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -22,7 +32,6 @@ function App() {
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token && !isAuthenticated) {
-      // Initial status was already set to 'loading' in authSlice.js if token existed
       axiosInstance.get('/api/auth/me')
         .then(res => dispatch(loginSuccess({ ...res.data, _token: token })))
         .catch(() => { 
@@ -32,8 +41,9 @@ function App() {
     }
   }, [dispatch, isAuthenticated]);
 
+
+
   useEffect(() => {
-    // Handling redirection securely when hitting the root URL
     if (status !== 'loading') {
       if (!isAuthenticated) {
         if (location.pathname !== '/login') {
@@ -41,7 +51,7 @@ function App() {
         }
       } else {
         if (location.pathname === '/' || location.pathname === '/login') {
-          if (user?.role === 'admin') {
+          if (isAdminLevel(userRole)) {
             navigate('/admin/dashboard', { replace: true });
           } else {
             navigate('/member/profile', { replace: true });
@@ -49,16 +59,21 @@ function App() {
         }
       }
     }
-  }, [isAuthenticated, user, location.pathname, navigate, status]);
+  }, [isAuthenticated, userRole, location.pathname, navigate, status]);
 
   if (status === 'loading') {
     return (
       <div className="splash-screen">
         <div className="splash-content">
           <div className="splash-logo">
-            <span className="material-symbols-outlined" style={{ fontSize: '4rem', color: 'var(--color-primary)' }}>bolt</span>
+            <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: '4rem', height: '4rem', color: 'var(--color-primary)' }}>
+              <circle cx="20" cy="20" r="18" stroke="currentColor" strokeWidth="2.5" fill="none"/>
+              <path d="M20 6 L20 34 M6 20 L34 20" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+              <path d="M11 11 L29 29 M29 11 L11 29" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" opacity="0.5"/>
+              <circle cx="20" cy="20" r="5" fill="currentColor"/>
+            </svg>
           </div>
-          <h1 className="splash-title">ESDM KASIR</h1>
+          <h1 className="splash-title" style={{ fontSize: '1.3rem', lineHeight: '1.3' }}>Koperasi Konsumen Pegawai KESDM</h1>
           <div className="splash-loader">
             <div className="loader-bar"></div>
           </div>
@@ -68,59 +83,37 @@ function App() {
     );
   }
 
+  // Guard component yang fleksibel berdasarkan role
+  const AdminRoute = ({ element, fullAdminOnly = false }) => {
+    if (!isAuthenticated) return <Navigate to="/login" replace />;
+    if (!isAdminLevel(userRole)) return <Navigate to="/login" replace />;
+    if (fullAdminOnly && !isFullAdmin(userRole)) return <Navigate to="/admin/dashboard" replace />;
+    return element;
+  };
+
   return (
     <>
       <Toast />
       <Routes>
-      {/* Default/Login Page */}
-      <Route path="/login" element={<Login />} />
-      
-      {/* Protected Routes: Member Level */}
-      <Route 
-        path="/member/profile" 
-        element={
-          isAuthenticated && user?.role === 'member' 
-            ? <MemberProfile /> 
-            : <Navigate to="/login" replace />
-        } 
-      />
+        {/* Login */}
+        <Route path="/login" element={<Login />} />
+        
+        {/* Member */}
+        <Route path="/member/profile" element={isAuthenticated && userRole === 'member' ? <MemberProfile /> : <Navigate to="/login" replace />} />
 
-      {/* Protected Routes: Admin Level */}
-      <Route 
-        path="/admin/dashboard" 
-        element={
-          isAuthenticated && user?.role === 'admin' 
-            ? <AdminDashboard /> 
-            : <Navigate to="/login" replace />
-        } 
-      />
-      <Route 
-        path="/admin/inventaris" 
-        element={
-          isAuthenticated && user?.role === 'admin' 
-            ? <AdminInventaris /> 
-            : <Navigate to="/login" replace />
-        } 
-      />
-      <Route 
-        path="/admin/transaksi" 
-        element={
-          isAuthenticated && user?.role === 'admin' 
-            ? <AdminTransaksi /> 
-            : <Navigate to="/login" replace />
-        } 
-      />
-      <Route 
-        path="/admin/profil" 
-        element={
-          isAuthenticated && user?.role === 'admin' 
-            ? <AdminProfil /> 
-            : <Navigate to="/login" replace />
-        } 
-      />
-      
-      {/* Catch-all */}
-      <Route path="*" element={<Navigate to="/" replace />} />
+        {/* Admin Routes Wrapper */}
+        <Route element={<AdminRoute element={<AdminLayout />} />}>
+            <Route path="/admin/dashboard" element={<AdminDashboard />} />
+            <Route path="/admin/transaksi" element={<AdminTransaksi />} />
+            <Route path="/admin/profil" element={<AdminProfil />} />
+            <Route path="/admin/inventaris" element={<AdminRoute element={<AdminInventaris />} fullAdminOnly />} />
+            <Route path="/admin/profit" element={<AdminRoute element={<AdminProfitProduk />} fullAdminOnly />} />
+            <Route path="/admin/master-data" element={<AdminRoute element={<AdminMasterData />} fullAdminOnly />} />
+            <Route path="/admin/anggota" element={<AdminRoute element={<AdminMasterAnggota />} fullAdminOnly />} />
+        </Route>
+
+        {/* Catch-all */}
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </>
   );

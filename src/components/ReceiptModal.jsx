@@ -55,7 +55,7 @@ const ReceiptModal = ({ transactionId, isOpen, onClose }) => {
                         <div id="receipt-print-area" className="receipt-paper">
                             {/* Receipt Content */}
                             <div className="rcpt-header">
-                                <h1>ESDM Kasir</h1>
+                                <h1>Koperasi Konsumen Pegawai KESDM</h1>
                                 <p>KANTOR PUSAT KESDM</p>
                                 <p>Jl. Medan Merdeka Selatan No. 18</p>
                                 <p>Jakarta Pusat, DKI Jakarta</p>
@@ -65,7 +65,8 @@ const ReceiptModal = ({ transactionId, isOpen, onClose }) => {
                             
                             <div className="rcpt-meta">
                                 <div><span>No. Inv:</span> <span>{header.invoice_number}</span></div>
-                                <div><span>Tanggal:</span> <span>{new Date(header.created_date).toLocaleString('id-ID')}</span></div>
+                                <div><span>Tanggal:</span> <span>{new Date(header.created_date).toLocaleDateString('id-ID', { timeZone: 'Asia/Jakarta', day: 'numeric', month: 'long', year: 'numeric' })}</span></div>
+                                <div><span>Pukul:</span> <span>{new Date(header.created_date).toLocaleTimeString('id-ID', { timeZone: 'Asia/Jakarta', hour: '2-digit', minute: '2-digit', second: '2-digit' })} WIB</span></div>
                                 <div><span>Kasir:</span> <span>{header.created_by}</span></div>
                                 {header.member_name && (
                                     <div><span>Member:</span> <span>{header.member_name} ({header.no_anggota})</span></div>
@@ -162,7 +163,8 @@ const ReceiptModal = ({ transactionId, isOpen, onClose }) => {
                             
                             <div className="rcpt-meta">
                                 <div><span>No. Inv:</span> <span>{header.invoice_number}</span></div>
-                                <div><span>Tanggal:</span> <span>{new Date(header.created_date).toLocaleString('id-ID')}</span></div>
+                                <div><span>Tanggal:</span> <span>{new Date(header.created_date).toLocaleDateString('id-ID', { timeZone: 'Asia/Jakarta', day: 'numeric', month: 'long', year: 'numeric' })}</span></div>
+                                <div><span>Pukul:</span> <span>{new Date(header.created_date).toLocaleTimeString('id-ID', { timeZone: 'Asia/Jakarta', hour: '2-digit', minute: '2-digit', second: '2-digit' })} WIB</span></div>
                                 <div><span>Kasir:</span> <span>{header.created_by}</span></div>
                                 {header.member_name && (
                                     <div><span>Member:</span> <span>{header.member_name}</span></div>
