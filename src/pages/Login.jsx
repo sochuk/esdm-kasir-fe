@@ -25,12 +25,11 @@ const Login = () => {
         {/* Brand Identity Header */}
         <div className="login-brand">
           <div className="brand-logo">
-            <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: '2.25rem', height: '2.25rem' }}>
-              <circle cx="20" cy="20" r="18" stroke="currentColor" strokeWidth="2.5" fill="none"/>
-              <path d="M20 6 L20 34 M6 20 L34 20" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-              <path d="M11 11 L29 29 M29 11 L11 29" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" opacity="0.5"/>
-              <circle cx="20" cy="20" r="5" fill="currentColor"/>
-            </svg>
+            <img
+              src="/img/esdm_icon_login.png"
+              alt="ESDM Logo"
+              style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+            />
           </div>
           <h1 className="brand-title" style={{ fontSize: '1.4rem', lineHeight: '1.2' }}>Koperasi Konsumen<br/>Pegawai KESDM</h1>
         </div>

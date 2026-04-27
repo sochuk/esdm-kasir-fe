@@ -17,7 +17,7 @@ const AdminInventaris = () => {
     const [deleteTarget, setDeleteTarget] = useState(null); // { id, name }
     const [stockFilter, setStockFilter] = useState('all'); // 'all' | 'low' | 'empty'
     const [categoryFilter, setCategoryFilter] = useState('');
-    const [sortBy, setSortBy] = useState('stock-desc');
+    const [sortBy, setSortBy] = useState('name-asc');
 
     // Master category list — fetched dynamically from DB
     const [categories, setCategories] = useState([]);
@@ -159,6 +159,7 @@ const AdminInventaris = () => {
             return matchStock && matchCategory;
         })
         .sort((a, b) => {
+            if (sortBy === 'name-asc') return a.name.localeCompare(b.name, 'id');
             if (sortBy === 'stock-desc') return Number(b.stock) - Number(a.stock);
             if (sortBy === 'price-asc') return Number(a.price) - Number(b.price);
             if (sortBy === 'newest') return new Date(b.created_date) - new Date(a.created_date);
@@ -315,6 +316,7 @@ const AdminInventaris = () => {
                                     value={sortBy}
                                     onChange={(e) => setSortBy(e.target.value)}
                                 >
+                                    <option value="name-asc">Nama (A–Z)</option>
                                     <option value="stock-desc">Tingkat Stok (Tinggi ke Rendah)</option>
                                     <option value="price-asc">Harga (Rendah ke Tinggi)</option>
                                     <option value="newest">Baru Ditambahkan</option>

@@ -4,13 +4,6 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { logout } from '../features/auth/authSlice';
 import './AdminSidebar.css';
 
-const KoperasiLogo = ({ size = '1.2rem' }) => (
-    <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: size, height: size, color: 'currentColor' }}>
-        <circle cx="20" cy="20" r="18" stroke="currentColor" strokeWidth="2.5" fill="none"/>
-        <path d="M20 6 L20 34 M6 20 L34 20" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-        <circle cx="20" cy="20" r="5" fill="currentColor"/>
-    </svg>
-);
 
 const NavButton = memo(({ to, icon, label, isActive, onClick }) => (
     <button
@@ -46,14 +39,11 @@ const AdminSidebar = () => {
     return (
         <aside className="global-sidebar">
             <div className="sidebar-header">
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                    <div style={{ background: 'var(--color-primary-fixed)', borderRadius: '0.4rem', width: '2rem', height: '2rem', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, color: '#18181b' }}>
-                        <KoperasiLogo size="1.1rem" />
-                    </div>
-                    <div>
-                        <h1 className="sidebar-brand" style={{ fontSize: '0.72rem', lineHeight: '1.2' }}>Koperasi Konsumen<br/>Pegawai KESDM</h1>
-                    </div>
-                </div>
+                <img
+                    src="/img/logo-esdm-panjang.jpg.jpeg"
+                    alt="Logo ESDM"
+                    style={{ width: '100%', height: 'auto', objectFit: 'contain', display: 'block' }}
+                />
             </div>
 
             <div className="sidebar-profile">

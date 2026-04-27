@@ -198,18 +198,31 @@
    MEDIA QUERY FOR ACTUAL PRINTING
    ========================================= */
 @media print {
-    /* Hide the entire app UI except the print-only block */
-    body * {
-        visibility: hidden;
+    @page {
+        margin: 0;
+        size: 58mm auto;
+    }
+
+    /* Hide all children of body EXCEPT .print-only */
+    body > * {
+        display: none !important;
     }
     
-    .print-only, .print-only * {
-        visibility: visible;
+    body > .print-only {
+        display: block !important;
+    }
+
+    /* Reset body and html margins */
+    html, body {
+        margin: 0 !important;
+        padding: 0 !important;
+        height: auto !important;
+        min-height: 0 !important;
+        background: transparent !important;
     }
 
     .print-only {
-        display: block;
-        position: absolute;
+        position: relative !important;
         left: 0;
         top: 0;
         width: 100%;

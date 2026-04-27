@@ -188,6 +188,7 @@ const MemberProfile = () => {
                     </div>
 
                     <div className="card-footer">
+                        <img src="/img/kesdm logo.png" alt="Logo KESDM" style={{ height: '28px', width: 'auto', objectFit: 'contain', marginBottom: '0.25rem', opacity: 0.7 }} />
                         <span className="footer-brand">ESDM Kasir · Secure ID</span>
                     </div>
                 </div>

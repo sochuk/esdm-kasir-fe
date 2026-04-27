@@ -9,7 +9,7 @@ RUN npm install
 COPY . .
 
 # Set production API URL (proxied through Nginx on the same domain)
-ARG VITE_API_URL=https://103-150-227-194.nip.io
+ARG VITE_API_URL=https://koperasiesdm.id
 ENV VITE_API_URL=$VITE_API_URL
 
 RUN npm run build

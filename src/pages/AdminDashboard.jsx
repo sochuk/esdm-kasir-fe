@@ -54,7 +54,7 @@ const AdminDashboard = () => {
 
     // Dynamic item manual search
     const filteredProducts = inventory.filter(p => p.stock > 0 &&
-        (p.name.toLowerCase().includes(searchQuery.toLowerCase()) || p.sku.toLowerCase().includes(searchQuery.toLowerCase()))
+        (p.name.toLowerCase().includes(searchQuery.toLowerCase()) || (p.sku ?? '').toLowerCase().includes(searchQuery.toLowerCase()))
     );
 
     // Handlers
