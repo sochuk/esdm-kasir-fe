@@ -43,7 +43,7 @@ const Login = () => {
             <form onSubmit={handleSubmit} className="login-form">
               {/* Input: Identity */}
               <div className="input-group">
-                <label className="input-label">Username atau ID</label>
+                <label className="input-label">Username / No. HP</label>
                 <div className="input-wrapper">
                   <div className="input-icon-left">
                     <span className="material-symbols-outlined">person</span>
@@ -51,7 +51,7 @@ const Login = () => {
                   <input 
                     type="text" 
                     className="input-field" 
-                    placeholder="Contoh: ADM-01-2024"
+                    placeholder="Username atau No. Handphone"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
                     disabled={status === 'loading'}

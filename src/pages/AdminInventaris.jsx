@@ -61,7 +61,7 @@ const AdminInventaris = () => {
             setFormData({
                 id: product.id,
                 name: product.name,
-                sku: product.sku,
+                sku: product.sku || '',
                 category: product.category,
                 price: product.price,
                 buy_price: product.buy_price || '',
@@ -197,7 +197,7 @@ const AdminInventaris = () => {
                     )}
                     <div>
                         <p className="font-bold text-gray-900" style={{ fontSize: '0.85rem' }}>{prod.name}</p>
-                        <p className={Number(prod.stock) < 15 ? "prod-sku text-error" : "prod-sku"} style={{ fontSize: '0.75rem' }}>SKU: {prod.sku}</p>
+                        <p className={Number(prod.stock) < 15 ? "prod-sku text-error" : "prod-sku"} style={{ fontSize: '0.75rem' }}>SKU: {prod.sku || '-'}</p>
                     </div>
                 </div>
             )
